@@ -1,0 +1,59 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+/*
+ * Laga design tokens — premium dark UI.
+ * These map the locked palette into Tailwind v4's @theme so utilities like
+ * `bg-surface`, `text-secondary`, `border-border`, `text-accent` are available
+ * everywhere. White-label branding can later override the accent tokens per
+ * tournament via inline CSS custom properties.
+ */
+@theme {
+	--color-bg: #0b1220;
+	--color-surface: #121b2e;
+	--color-surface-elevated: #182338;
+	--color-border: #26324a;
+
+	--color-primary: #ecf2ff; /* primary text */
+	--color-secondary: #9fb0cc; /* secondary text */
+
+	--color-accent: #19a974;
+	--color-accent-hover: #148a60;
+	--color-accent-soft: #d9f5ea;
+	--color-gold: #c8a96b; /* secondary accent */
+
+	--color-live: #22c55e; /* success / live */
+	--color-warning: #eab308;
+	--color-danger: #f97316; /* errors / incidents only */
+
+	--radius-card: 0.75rem;
+
+	--font-sans:
+		ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Dark by default — the public product is a dark premium surface. */
+:root {
+	color-scheme: dark;
+}
+
+html,
+body {
+	background-color: var(--color-bg);
+	color: var(--color-primary);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Thin, on-theme scrollbars for the horizontal bracket area. */
+.bracket-scroll {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-border) transparent;
+}
+.bracket-scroll::-webkit-scrollbar {
+	height: 8px;
+}
+.bracket-scroll::-webkit-scrollbar-thumb {
+	background: var(--color-border);
+	border-radius: 9999px;
+}
