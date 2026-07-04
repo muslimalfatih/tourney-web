@@ -28,7 +28,7 @@
 								<span class="font-medium text-primary">{event.name}</span>
 								<Badge tone="neutral">{event.discipline}</Badge>
 							</div>
-							<p class="mt-2 text-xs text-secondary">
+							<p class="mt-2 text-xs text-muted">
 								{formatLabel[event.format] ?? event.format}
 							</p>
 						</Card>
@@ -43,11 +43,11 @@
 		<Card>
 			<dl class="space-y-3 text-sm">
 				<div class="flex justify-between">
-					<dt class="text-secondary">Sport</dt>
+					<dt class="text-muted">Sport</dt>
 					<dd class="capitalize text-primary">{data.tournament.sport}</dd>
 				</div>
 				<div class="flex justify-between">
-					<dt class="text-secondary">Status</dt>
+					<dt class="text-muted">Status</dt>
 					<dd class="text-primary capitalize">{data.tournament.status}</dd>
 				</div>
 			</dl>

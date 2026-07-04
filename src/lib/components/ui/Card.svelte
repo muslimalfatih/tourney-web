@@ -3,13 +3,17 @@
 	import { cn } from '$lib/utils/cn';
 	let {
 		class: className = '',
+		key = false,
+		padded = true,
 		children
-	}: { class?: string; children: Snippet } = $props();
+	}: { class?: string; key?: boolean; padded?: boolean; children: Snippet } = $props();
 </script>
 
 <div
 	class={cn(
-		'rounded-[--radius-card] border border-border bg-surface p-5 shadow-sm',
+		'rounded-lg border border-border bg-surface',
+		key ? 'shadow-(--shadow-soft)' : 'shadow-(--shadow-subtle)',
+		padded && 'p-5',
 		className
 	)}
 >

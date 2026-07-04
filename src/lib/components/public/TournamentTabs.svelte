@@ -27,7 +27,7 @@
 					'-mb-px whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors',
 					active(tab.href)
 						? 'border-accent text-primary'
-						: 'border-transparent text-secondary hover:text-primary'
+						: 'border-transparent text-muted hover:text-primary'
 				)}
 			>
 				{tab.label}

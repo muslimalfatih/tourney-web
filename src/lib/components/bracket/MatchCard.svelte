@@ -28,11 +28,11 @@
 	<div
 		class={cn(
 			'flex items-center gap-2 px-3 py-2',
-			isWinner(p) ? 'text-primary' : 'text-secondary'
+			isWinner(p) ? 'text-primary' : 'text-muted'
 		)}
 	>
 		{#if p?.seed}
-			<span class="w-4 shrink-0 text-[10px] text-secondary/70">{p.seed}</span>
+			<span class="w-4 shrink-0 text-[10px] text-muted/70">{p.seed}</span>
 		{:else}
 			<span class="w-4 shrink-0"></span>
 		{/if}
@@ -44,7 +44,7 @@
 			{#each match.sets as set (set.set_number)}
 				<span class={cn('relative text-sm', isWinner(p) && 'font-semibold text-accent')}>
 					{games(set, side)}{#if tiebreak(set, side) != null}<sup
-							class="text-[9px] text-secondary/70">{tiebreak(set, side)}</sup
+							class="text-[9px] text-muted/70">{tiebreak(set, side)}</sup
 						>{/if}
 				</span>
 			{/each}
@@ -71,9 +71,9 @@
 	{@render row(slot(2), 2)}
 
 	{#if live}
-		<div class="flex items-center gap-1.5 border-t border-border bg-live/10 px-3 py-1">
-			<span class="size-1.5 animate-pulse rounded-full bg-live"></span>
-			<span class="text-[10px] font-medium uppercase tracking-wide text-live">Live</span>
+		<div class="flex items-center gap-1.5 border-t border-border bg-accent/10 px-3 py-1">
+			<span class="size-1.5 animate-pulse rounded-full bg-accent"></span>
+			<span class="text-[10px] font-medium uppercase tracking-wide text-accent">Live</span>
 		</div>
 	{/if}
 </svelte:element>

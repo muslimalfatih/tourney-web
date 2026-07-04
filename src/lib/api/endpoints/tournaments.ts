@@ -1,4 +1,4 @@
-import { apiGet, apiList, apiPost, type RequestOptions } from '$lib/api/client';
+import { apiGet, apiList, apiPost, apiPatch, type RequestOptions } from '$lib/api/client';
 import type { Bracket, Match, PublicTournament, Tournament } from '$lib/api/types';
 
 // --- Public (SSR) reads ---
@@ -23,9 +23,11 @@ export function listTournaments(opts?: RequestOptions) {
 
 export interface CreateTournamentInput {
 	name: string;
-	slug: string;
+	slug?: string;
 	sport: 'tennis';
 	location?: string;
+	starts_on?: string;
+	ends_on?: string;
 	branding?: Record<string, unknown>;
 }
 
@@ -33,6 +35,25 @@ export function createTournament(input: CreateTournamentInput, opts?: RequestOpt
 	return apiPost<Tournament>('/tournaments', input, opts);
 }
 
+export function getTournament(id: string, opts?: RequestOptions) {
+	return apiGet<Tournament>(`/tournaments/${id}`, opts);
+}
+
+export function updateTournament(
+	id: string,
+	patch: Partial<Pick<CreateTournamentInput, 'name' | 'location'>> & {
+		starts_on?: string;
+		ends_on?: string;
+	},
+	opts?: RequestOptions
+) {
+	return apiPatch<Tournament>(`/tournaments/${id}`, patch, opts);
+}
+
 export function publishTournament(id: string, opts?: RequestOptions) {
 	return apiPost<Tournament>(`/tournaments/${id}/publish`, undefined, opts);
+}
+
+export function unpublishTournament(id: string, opts?: RequestOptions) {
+	return apiPost<Tournament>(`/tournaments/${id}/unpublish`, undefined, opts);
 }

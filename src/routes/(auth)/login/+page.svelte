@@ -17,7 +17,7 @@
 
 		<Card>
 			<h1 class="text-lg font-semibold text-primary">Sign in</h1>
-			<p class="mt-1 text-sm text-secondary">Organizer &amp; admin access.</p>
+			<p class="mt-1 text-sm text-muted">Organizer &amp; admin access.</p>
 
 			<form
 				method="POST"
@@ -37,25 +37,25 @@
 				{/if}
 
 				<div class="space-y-1.5">
-					<label for="email" class="text-sm font-medium text-secondary">Email</label>
+					<label for="email" class="text-sm font-medium text-muted">Email</label>
 					<input
 						id="email"
 						name="email"
 						type="email"
 						required
 						value={form?.email ?? ''}
-						class="h-10 w-full rounded-lg border border-border bg-surface-elevated px-3 text-sm text-primary outline-none focus:border-accent"
+						class="h-10 w-full rounded-lg border border-border bg-subtle px-3 text-sm text-primary outline-none focus:border-accent"
 					/>
 				</div>
 
 				<div class="space-y-1.5">
-					<label for="password" class="text-sm font-medium text-secondary">Password</label>
+					<label for="password" class="text-sm font-medium text-muted">Password</label>
 					<input
 						id="password"
 						name="password"
 						type="password"
 						required
-						class="h-10 w-full rounded-lg border border-border bg-surface-elevated px-3 text-sm text-primary outline-none focus:border-accent"
+						class="h-10 w-full rounded-lg border border-border bg-subtle px-3 text-sm text-primary outline-none focus:border-accent"
 					/>
 				</div>
 

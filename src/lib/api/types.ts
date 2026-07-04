@@ -24,6 +24,11 @@ export interface Tournament {
 	slug: string;
 	sport: string;
 	status: TournamentStatus;
+	location?: string | null;
+	starts_on?: string | null;
+	ends_on?: string | null;
+	published_at?: string | null;
+	event_count?: number;
 }
 
 export type EventFormat = 'single_elim' | 'round_robin' | 'group_knockout';

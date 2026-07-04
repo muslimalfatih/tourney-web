@@ -15,7 +15,7 @@
 <div class="flex min-w-56 flex-col">
 	<div class="mb-3 px-1">
 		<h3 class="text-sm font-semibold text-primary">{round.name}</h3>
-		<p class="text-xs text-secondary">{round.matches.length} match{round.matches.length === 1 ? '' : 'es'}</p>
+		<p class="text-xs text-muted">{round.matches.length} match{round.matches.length === 1 ? '' : 'es'}</p>
 	</div>
 
 	<!--

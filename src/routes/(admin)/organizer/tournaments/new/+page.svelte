@@ -9,11 +9,11 @@
 	let submitting = $state(false);
 
 	const inputClass =
-		'h-10 w-full rounded-lg border border-border bg-surface-elevated px-3 text-sm text-primary outline-none focus:border-accent';
+		'h-10 w-full rounded-lg border border-border bg-subtle px-3 text-sm text-primary outline-none focus:border-accent';
 </script>
 
 <div class="mb-6">
-	<a href="/organizer/tournaments" class="text-sm text-secondary hover:text-primary">← Tournaments</a>
+	<a href="/organizer/tournaments" class="text-sm text-muted hover:text-primary">← Tournaments</a>
 	<h1 class="mt-2 text-xl font-semibold text-primary">New tournament</h1>
 </div>
 
@@ -37,12 +37,12 @@
 			{/if}
 
 			<div class="space-y-1.5">
-				<label for="name" class="text-sm font-medium text-secondary">Name</label>
+				<label for="name" class="text-sm font-medium text-muted">Name</label>
 				<input id="name" name="name" required value={form?.name ?? ''} class={inputClass} />
 			</div>
 
 			<div class="space-y-1.5">
-				<label for="slug" class="text-sm font-medium text-secondary">Slug</label>
+				<label for="slug" class="text-sm font-medium text-muted">Slug</label>
 				<input
 					id="slug"
 					name="slug"
@@ -51,11 +51,11 @@
 					value={form?.slug ?? ''}
 					class={inputClass}
 				/>
-				<p class="text-xs text-secondary">Used in the public URL: /tournaments/&lt;slug&gt;</p>
+				<p class="text-xs text-muted">Used in the public URL: /tournaments/&lt;slug&gt;</p>
 			</div>
 
 			<div class="space-y-1.5">
-				<label for="location" class="text-sm font-medium text-secondary">Location (optional)</label>
+				<label for="location" class="text-sm font-medium text-muted">Location (optional)</label>
 				<input id="location" name="location" value={form?.location ?? ''} class={inputClass} />
 			</div>
 

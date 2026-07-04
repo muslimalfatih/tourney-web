@@ -11,14 +11,14 @@
 	<h1 class="text-4xl font-bold tracking-tight text-primary sm:text-5xl">
 		Tournaments, done right.
 	</h1>
-	<p class="mx-auto mt-4 max-w-xl text-secondary">
+	<p class="mx-auto mt-4 max-w-xl text-muted">
 		Live brackets, schedules and results for tennis events — clean, fast and
 		mobile-friendly.
 	</p>
 
 	<div class="mt-10 text-left">
 		<Card>
-			<p class="text-sm text-secondary">Example tournament</p>
+			<p class="text-sm text-muted">Example tournament</p>
 			<a
 				href="/tournaments/bali-open"
 				class="mt-1 flex items-center justify-between font-medium text-primary hover:text-accent"

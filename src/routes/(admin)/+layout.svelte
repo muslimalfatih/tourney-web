@@ -30,10 +30,12 @@
 	}
 </script>
 
-<div class="flex min-h-screen bg-bg">
+<div class="flex min-h-screen bg-page">
 	<aside class="hidden w-60 shrink-0 border-r border-border bg-surface md:block">
-		<div class="flex items-center gap-2 px-5 py-4 font-semibold text-primary">
-			<Trophy class="size-5 text-accent" />
+		<div
+			class="flex items-center gap-2 px-5 py-4 font-display text-[15px] font-bold uppercase tracking-[0.14em] text-accent"
+		>
+			<Trophy class="size-5" />
 			Laga
 		</div>
 		<nav class="space-y-1 px-3">
@@ -41,10 +43,10 @@
 				<a
 					href={item.href}
 					class={cn(
-						'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+						'flex items-center gap-2 rounded-pill px-3 py-2 text-[13px] transition-colors',
 						active(item.href)
-							? 'bg-surface-elevated text-primary'
-							: 'text-secondary hover:bg-surface-elevated hover:text-primary'
+							? 'bg-accent text-on-accent'
+							: 'text-primary hover:bg-subtle'
 					)}
 				>
 					<item.icon class="size-4" />
@@ -55,15 +57,15 @@
 	</aside>
 
 	<div class="flex min-w-0 flex-1 flex-col">
-		<header class="flex items-center justify-between border-b border-border bg-surface px-4 py-3">
-			<span class="text-sm text-secondary">
+		<header class="flex items-center justify-between border-b border-border bg-page px-4 py-3">
+			<span class="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
 				{data.user.role === 'super_admin' ? 'Super Admin' : 'Organizer'}
 			</span>
 			<div class="flex items-center gap-3">
 				<span class="text-sm text-primary">{data.user.name}</span>
 				<form method="POST" action="/logout">
 					<button
-						class="flex items-center gap-1.5 text-sm text-secondary hover:text-primary"
+						class="flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-primary"
 						type="submit"
 					>
 						<LogOut class="size-4" />

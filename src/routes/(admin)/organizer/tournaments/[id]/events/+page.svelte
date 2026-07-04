@@ -5,7 +5,7 @@
 	const id = $derived(page.params.id);
 </script>
 
-<a href="/organizer/tournaments/{id}" class="text-sm text-secondary hover:text-primary">← Tournament</a>
+<a href="/organizer/tournaments/{id}" class="text-sm text-muted hover:text-primary">← Tournament</a>
 <h1 class="mb-6 mt-2 text-xl font-semibold text-primary">Events / divisions</h1>
 
 <EmptyState

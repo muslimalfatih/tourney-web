@@ -16,7 +16,7 @@
 	);
 </script>
 
-<a href="/tournaments/{data.tournament.slug}/bracket" class="text-sm text-secondary hover:text-primary"
+<a href="/tournaments/{data.tournament.slug}/bracket" class="text-sm text-muted hover:text-primary"
 	>← Back to bracket</a
 >
 
@@ -25,12 +25,12 @@
 {#if match}
 	<div class="max-w-md space-y-4">
 		<div class="flex items-center gap-2">
-			<Badge tone={match.status === 'live' ? 'live' : 'neutral'}>{match.status}</Badge>
+			<Badge tone={match.status === 'live' ? 'accent' : 'neutral'}>{match.status}</Badge>
 		</div>
 		<MatchCard {match} />
 	</div>
 {:else}
 	<Card>
-		<p class="text-sm text-secondary">Match not found.</p>
+		<p class="text-sm text-muted">Match not found.</p>
 	</Card>
 {/if}

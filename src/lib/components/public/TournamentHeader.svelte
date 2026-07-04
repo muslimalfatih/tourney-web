@@ -25,7 +25,7 @@
 			{title}
 		</h1>
 		{#if location}
-			<p class="mt-2 flex items-center gap-1.5 text-sm text-secondary">
+			<p class="mt-2 flex items-center gap-1.5 text-sm text-muted">
 				<MapPin class="size-4" />
 				{location}
 			</p>

@@ -33,8 +33,8 @@
 <div class="mb-4 flex items-center justify-between">
 	<h2 class="text-lg font-semibold text-primary">Bracket</h2>
 	{#if live?.connected}
-		<Badge tone="live">
-			<span class="size-1.5 animate-pulse rounded-full bg-live"></span>
+		<Badge tone="accent">
+			<span class="size-1.5 animate-pulse rounded-full bg-accent"></span>
 			Live
 		</Badge>
 	{/if}
