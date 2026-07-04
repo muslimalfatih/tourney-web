@@ -71,3 +71,22 @@ export interface EventBracket {
 export function getEventBracket(eventId: string, opts?: RequestOptions) {
 	return apiGet<EventBracket>(`/public/events/${eventId}/bracket`, opts);
 }
+
+// Round-robin standings.
+export interface Standing {
+	participant_id: string;
+	display_name: string;
+	seed: number | null;
+	played: number;
+	won: number;
+	lost: number;
+	sets_for: number;
+	sets_against: number;
+}
+
+export function getEventStandings(eventId: string, opts?: RequestOptions) {
+	return apiGet<{ event_id: string; standings: Standing[] }>(
+		`/public/events/${eventId}/standings`,
+		opts
+	);
+}
