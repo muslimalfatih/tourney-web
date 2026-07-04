@@ -3,7 +3,7 @@
 	import type { User } from '$lib/api/types';
 	import { page } from '$app/state';
 	import { cn } from '$lib/utils/cn';
-	import { Trophy, LayoutDashboard, Users, Calendar, LogOut } from '@lucide/svelte';
+	import { Trophy, LayoutDashboard, Users, Calendar, LogOut, ScrollText } from '@lucide/svelte';
 
 	let { data, children }: { data: { user: User }; children: Snippet } = $props();
 
@@ -14,7 +14,8 @@
 			? [
 					{ label: 'Overview', href: '/super-admin', icon: LayoutDashboard },
 					{ label: 'Organizers', href: '/super-admin/organizers', icon: Users },
-					{ label: 'Tournaments', href: '/super-admin/tournaments', icon: Trophy }
+					{ label: 'Tournaments', href: '/super-admin/tournaments', icon: Trophy },
+						{ label: 'Audit log', href: '/super-admin/audit', icon: ScrollText }
 				]
 			: [
 					{ label: 'Overview', href: '/organizer', icon: LayoutDashboard },
