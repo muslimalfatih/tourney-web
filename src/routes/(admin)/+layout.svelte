@@ -3,7 +3,7 @@
 	import type { User } from '$lib/api/types';
 	import { page } from '$app/state';
 	import { cn } from '$lib/utils/cn';
-	import { Trophy, LayoutDashboard, Users, Calendar, LogOut, ScrollText } from '@lucide/svelte';
+	import { Trophy, LayoutDashboard, Users, LogOut, ScrollText } from '@lucide/svelte';
 
 	let { data, children }: { data: { user: User }; children: Snippet } = $props();
 
@@ -19,8 +19,7 @@
 				]
 			: [
 					{ label: 'Overview', href: '/organizer', icon: LayoutDashboard },
-					{ label: 'Tournaments', href: '/organizer/tournaments', icon: Trophy },
-					{ label: 'Schedule', href: '/organizer', icon: Calendar }
+					{ label: 'Tournaments', href: '/organizer/tournaments', icon: Trophy }
 				]
 	);
 
@@ -40,7 +39,7 @@
 			Laga
 		</div>
 		<nav class="space-y-1 px-3">
-			{#each nav as item (item.href)}
+			{#each nav as item (item.label)}
 				<a
 					href={item.href}
 					class={cn(

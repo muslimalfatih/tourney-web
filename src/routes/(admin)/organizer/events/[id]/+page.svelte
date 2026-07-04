@@ -96,7 +96,7 @@
 			<table class="w-full min-w-[480px] border-collapse text-[13px]">
 				<thead>
 					<tr class="border-b border-border text-left">
-						{#each ['Seed', data.event.discipline === 'doubles' ? 'Team' : 'Player', ''] as h (h)}
+						{#each ['Seed', data.event.discipline === 'doubles' ? 'Team' : 'Player', ''] as h, hi (hi)}
 							<th class="px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">{h}</th>
 						{/each}
 					</tr>

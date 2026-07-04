@@ -102,7 +102,7 @@
 			<table class="w-full min-w-[600px] border-collapse text-[13px]">
 				<thead>
 					<tr class="border-b border-border text-left">
-						{#each ['Tournament', 'Location', 'Dates', 'Events', 'Status', ''] as h (h)}
+						{#each ['Tournament', 'Location', 'Dates', 'Events', 'Status', ''] as h, hi (hi)}
 							<th class="px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted"
 								>{h}</th
 							>

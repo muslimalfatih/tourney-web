@@ -91,7 +91,7 @@
 			<table class="w-full min-w-[560px] border-collapse text-[13px]">
 				<thead>
 					<tr class="border-b border-border text-left">
-						{#each ['Division', 'Discipline', 'Format', 'Teams', 'Matches', ''] as h (h)}
+						{#each ['Division', 'Discipline', 'Format', 'Teams', 'Matches', ''] as h, hi (hi)}
 							<th class="px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted"
 								>{h}</th
 							>
