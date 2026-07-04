@@ -3,11 +3,10 @@
 	import type { Participant } from '$lib/api/endpoints/participants';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
+	import { tick } from 'svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Tag from '$lib/components/ui/Tag.svelte';
-	import Modal from '$lib/components/ui/Modal.svelte';
-	import Field from '$lib/components/ui/Field.svelte';
 	import RowMenu from '$lib/components/ui/RowMenu.svelte';
 	import RowMenuItem from '$lib/components/ui/RowMenuItem.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
@@ -22,9 +21,15 @@
 		form?: { error?: string };
 	} = $props();
 
-	let addOpen = $state(false);
 	let submitting = $state(false);
 	let deleteId = $state('');
+
+	// Inline add-row state: the name field is bound and cleared after each add so
+	// an organizer can enter a whole roster with name → Enter → name → Enter,
+	// never leaving the keyboard.
+	let nameInput = $state<HTMLInputElement | null>(null);
+	let addName = $state('');
+	let addSeed = $state('');
 
 	const formatLabel: Record<string, string> = {
 		single_elim: 'Single elimination',
@@ -77,19 +82,70 @@
 	<div class="flex items-center justify-between border-b border-border px-5 py-4">
 		<div>
 			<h2 class="font-display text-[15px] uppercase tracking-[0.08em] text-primary">Participants</h2>
-			<p class="text-xs text-muted">{data.participants.length} {entryNoun}{data.participants.length === 1 ? '' : 's'}</p>
+			<p class="text-xs text-muted">
+				{data.participants.length} {entryNoun}{data.participants.length === 1 ? '' : 's'}
+			</p>
 		</div>
-		<Button variant="ghost" size="sm" onclick={() => (addOpen = true)}>
-			<Plus class="size-4" /> Add {entryNoun}
-		</Button>
 	</div>
 
-	{#if data.participants.length === 0}
-		<div class="p-5">
-			<EmptyState
-				title="No {entryNoun}s yet"
-				message="Add {entryNoun}s and set seeds, then generate the draw."
+	<!-- Inline add row: always visible below the header. Add a whole roster
+	     without a modal — type a name, press Enter, keep going. -->
+	<form
+		method="POST"
+		action="?/addParticipant"
+		use:enhance={() => {
+			submitting = true;
+			return async ({ result, update }) => {
+				await update({ reset: false });
+				submitting = false;
+				if (result.type === 'success') {
+					addName = '';
+					addSeed = '';
+					await invalidateAll();
+					await tick();
+					nameInput?.focus(); // ready for the next entry
+				}
+			};
+		}}
+		class="flex flex-wrap items-end gap-2 border-b border-border bg-subtle/50 px-5 py-3"
+	>
+		<div class="flex min-w-[180px] flex-1 flex-col gap-1">
+			<label for="add-name" class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+				{data.event.discipline === 'doubles' ? 'Team name' : 'Player name'}
+			</label>
+			<input
+				id="add-name"
+				name="display_name"
+				bind:this={nameInput}
+				bind:value={addName}
+				required
+				autocomplete="off"
+				placeholder={data.event.discipline === 'doubles' ? 'Wibowo / Sari' : 'Andi Wibowo'}
+				class={inputClass}
 			/>
+		</div>
+		<div class="flex w-20 flex-col gap-1">
+			<label for="add-seed" class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Seed</label>
+			<input
+				id="add-seed"
+				name="seed"
+				type="number"
+				min="1"
+				bind:value={addSeed}
+				placeholder="—"
+				class="{inputClass} text-center"
+			/>
+		</div>
+		<Button type="submit" disabled={submitting || !addName.trim()}>
+			<Plus class="size-4" /> Add
+		</Button>
+	</form>
+
+	{#if data.participants.length === 0}
+		<div class="px-5 py-8">
+			<p class="text-center text-sm text-muted">
+				No {entryNoun}s yet — add your first above, then generate the draw.
+			</p>
 		</div>
 	{:else}
 		<div class="overflow-x-auto">
@@ -163,43 +219,6 @@
 		<a href="/organizer/events/{data.event.id}/draw"><Button>{drawLabel}</Button></a>
 	{/if}
 </div>
-
-<!-- Add modal -->
-<Modal
-	bind:open={addOpen}
-	title={`Add ${entryNoun}`}
-	description={data.event.discipline === 'doubles'
-		? 'Enter the pairing label (e.g. Wibowo / Sari)'
-		: "Enter the player's name"}
->
-	<form
-		method="POST"
-		action="?/addParticipant"
-		use:enhance={() => {
-			submitting = true;
-			return async ({ result, update }) => {
-				await update();
-				submitting = false;
-				if (result.type === 'success') {
-					addOpen = false;
-					await invalidateAll();
-				}
-			};
-		}}
-		class="flex flex-col gap-4"
-	>
-		<Field label={data.event.discipline === 'doubles' ? 'Team name' : 'Player name'}>
-			<input name="display_name" required class={inputClass} />
-		</Field>
-		<Field label="Seed (optional)" hint="Leave blank for unseeded">
-			<input name="seed" type="number" min="1" class={inputClass} />
-		</Field>
-		<div class="mt-2 flex justify-end gap-2">
-			<Button type="button" variant="ghost" onclick={() => (addOpen = false)}>Cancel</Button>
-			<Button type="submit" disabled={submitting}>{submitting ? 'Adding…' : 'Add'}</Button>
-		</div>
-	</form>
-</Modal>
 
 <form
 	id="delPartForm"
