@@ -40,16 +40,19 @@
 		<p class="text-xs capitalize text-muted">{data.event.discipline} · {formatLabel[kind] ?? kind}</p>
 	</div>
 	{#if kind === 'group_knockout'}
-		<form
-			method="POST"
-			action="?/resolve"
-			use:enhance={() => async ({ update }) => {
-				await update();
-				await invalidateAll();
-			}}
-		>
-			<Button type="submit" variant="ghost">Resolve groups → knockout</Button>
-		</form>
+		<div class="text-right">
+			<form
+				method="POST"
+				action="?/resolve"
+				use:enhance={() => async ({ update }) => {
+					await update();
+					await invalidateAll();
+				}}
+			>
+				<Button type="submit" variant="ghost" size="sm">Re-resolve knockout</Button>
+			</form>
+			<p class="mt-1 text-[11px] text-muted">Fills automatically when all groups finish.</p>
+		</div>
 	{/if}
 </div>
 

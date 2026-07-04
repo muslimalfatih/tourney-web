@@ -33,6 +33,13 @@
 	};
 
 	const entryNoun = $derived(data.event.discipline === 'doubles' ? 'team' : 'player');
+	const drawLabel = $derived(
+		data.event.format === 'round_robin'
+			? 'View standings'
+			: data.event.format === 'group_knockout'
+				? 'View groups'
+				: 'View bracket'
+	);
 
 	function del(id: string) {
 		deleteId = id;
@@ -153,7 +160,7 @@
 	</form>
 	{#if data.event.match_count > 0}
 		<a href="/organizer/events/{data.event.id}/matches"><Button variant="subtle">Enter scores</Button></a>
-		<a href="/organizer/events/{data.event.id}/draw"><Button>View bracket</Button></a>
+		<a href="/organizer/events/{data.event.id}/draw"><Button>{drawLabel}</Button></a>
 	{/if}
 </div>
 
