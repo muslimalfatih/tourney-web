@@ -13,6 +13,11 @@ export function listParticipants(eventId: string, opts?: RequestOptions) {
 	return apiGet<Participant[]>(`/events/${eventId}/participants`, opts);
 }
 
+// Public roster for an event (only if the tournament is published).
+export function listPublicParticipants(eventId: string, opts?: RequestOptions) {
+	return apiGet<Participant[]>(`/public/events/${eventId}/participants`, opts);
+}
+
 export function addParticipant(
 	eventId: string,
 	input: { display_name: string; seed?: number | null },

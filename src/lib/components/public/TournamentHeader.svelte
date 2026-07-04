@@ -10,7 +10,9 @@
 	const title = $derived(
 		(tournament.branding?.title as string | undefined) ?? tournament.name
 	);
-	const location = $derived(tournament.branding?.location as string | undefined);
+	const location = $derived(
+		(tournament.branding?.location as string | undefined) ?? tournament.location ?? undefined
+	);
 </script>
 
 <header class="border-b border-border bg-surface">
@@ -21,7 +23,9 @@
 				<Badge tone="accent">Live event</Badge>
 			{/if}
 		</div>
-		<h1 class="mt-3 text-3xl font-bold tracking-tight text-primary sm:text-4xl">
+		<h1
+			class="mt-3 font-display text-3xl uppercase tracking-[0.08em] text-primary sm:text-4xl"
+		>
 			{title}
 		</h1>
 		{#if location}
