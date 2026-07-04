@@ -45,11 +45,17 @@ export interface BracketSlot {
 	display_name: string | null;
 	seed: number | null;
 }
+export interface BracketSet {
+	p1: number;
+	p2: number;
+}
 export interface BracketMatch {
 	id: string;
 	match_no: number;
 	status: string;
+	winner_participant_id: string | null;
 	participants: BracketSlot[];
+	sets: BracketSet[];
 }
 export interface BracketRound {
 	round_number: number;

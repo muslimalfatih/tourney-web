@@ -152,6 +152,7 @@
 		{/if}
 	</form>
 	{#if data.event.match_count > 0}
+		<a href="/organizer/events/{data.event.id}/matches"><Button variant="subtle">Enter scores</Button></a>
 		<a href="/organizer/events/{data.event.id}/draw"><Button>View bracket</Button></a>
 	{/if}
 </div>
