@@ -44,6 +44,7 @@ export interface BracketSlot {
 	participant_id: string | null;
 	display_name: string | null;
 	seed: number | null;
+	source_label?: string | null;
 }
 export interface BracketSet {
 	p1: number;
@@ -87,6 +88,29 @@ export interface Standing {
 export function getEventStandings(eventId: string, opts?: RequestOptions) {
 	return apiGet<{ event_id: string; standings: Standing[] }>(
 		`/public/events/${eventId}/standings`,
+		opts
+	);
+}
+
+// Group-knockout read model: per-group standings + knockout bracket.
+export interface GroupTable {
+	name: string;
+	standings: Standing[];
+}
+export interface GroupKnockout {
+	event_id: string;
+	groups: GroupTable[];
+	knockout: BracketRound[];
+}
+
+export function getGroupKnockout(eventId: string, opts?: RequestOptions) {
+	return apiGet<GroupKnockout>(`/public/events/${eventId}/groups`, opts);
+}
+
+export function resolveGroups(eventId: string, opts?: RequestOptions) {
+	return apiPost<{ event_id: string; filled: number }>(
+		`/events/${eventId}/resolve-groups`,
+		undefined,
 		opts
 	);
 }

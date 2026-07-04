@@ -32,7 +32,7 @@
 			class={cn(
 				'min-w-0 flex-1 truncate text-[12px]',
 				isWinner(p) ? 'font-bold text-accent' : p?.display_name ? 'text-primary' : 'text-muted'
-			)}>{p?.display_name ?? (isBye ? 'Bye' : 'TBD')}</span
+			)}>{p?.display_name ?? p?.source_label ?? (isBye ? 'Bye' : 'TBD')}</span
 		>
 		<span
 			class={cn(

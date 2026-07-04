@@ -1,27 +1,32 @@
 import type { PageServerLoad } from './$types';
-import { getEventBracket, getEventStandings } from '$lib/api/endpoints/events';
+import { getEventBracket, getEventStandings, getGroupKnockout } from '$lib/api/endpoints/events';
 
 /**
- * SSR the bracket (or standings, for round-robin) for the selected event
- * (?event=<id>, defaulting to the first event). Public read — no token.
+ * SSR the appropriate view for the selected event by format:
+ * single_elim → bracket, round_robin → standings, group_knockout → groups+KO.
  */
 export const load: PageServerLoad = async ({ url, fetch, parent }) => {
 	const { tournament } = await parent();
 	const events = tournament.events ?? [];
 	const eventId = url.searchParams.get('event') ?? events[0]?.id ?? null;
-	if (!eventId) return { bracket: null, standings: null, eventId: null, isRoundRobin: false };
-
 	const selected = events.find((e) => e.id === eventId);
-	const isRoundRobin = selected?.format === 'round_robin';
+	const format = selected?.format ?? 'single_elim';
+
+	const base = { eventId, format };
+	if (!eventId) return { ...base, bracket: null, standings: null, groupKnockout: null };
 
 	try {
-		if (isRoundRobin) {
+		if (format === 'round_robin') {
 			const s = await getEventStandings(eventId, { fetch });
-			return { bracket: null, standings: s.standings, eventId, isRoundRobin };
+			return { ...base, bracket: null, standings: s.standings, groupKnockout: null };
+		}
+		if (format === 'group_knockout') {
+			const gk = await getGroupKnockout(eventId, { fetch });
+			return { ...base, bracket: null, standings: null, groupKnockout: gk };
 		}
 		const bracket = await getEventBracket(eventId, { fetch });
-		return { bracket, standings: null, eventId, isRoundRobin };
+		return { ...base, bracket, standings: null, groupKnockout: null };
 	} catch {
-		return { bracket: null, standings: null, eventId, isRoundRobin };
+		return { ...base, bracket: null, standings: null, groupKnockout: null };
 	}
 };
