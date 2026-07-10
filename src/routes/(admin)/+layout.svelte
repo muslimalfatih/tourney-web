@@ -43,7 +43,7 @@
 				<a
 					href={item.href}
 					class={cn(
-						'flex items-center gap-2 rounded-pill px-3 py-2 text-[13px] transition-colors',
+						'flex items-center gap-2 rounded-pill px-3 py-2 text-[13px] transition-[color,background-color,transform] duration-100 ease-out active:scale-[0.98] motion-reduce:active:scale-100',
 						active(item.href)
 							? 'bg-accent text-on-accent'
 							: 'text-primary hover:bg-subtle'
@@ -57,7 +57,9 @@
 	</aside>
 
 	<div class="flex min-w-0 flex-1 flex-col">
-		<header class="flex items-center justify-between border-b border-border bg-page px-4 py-3">
+		<header
+			class="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-page/80 px-4 py-3 backdrop-blur-xl backdrop-saturate-150 supports-[not(backdrop-filter:blur(0px))]:bg-page"
+		>
 			<span class="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
 				{data.user.role === 'super_admin' ? 'Super Admin' : 'Organizer'}
 			</span>
@@ -65,7 +67,7 @@
 				<span class="text-sm text-primary">{data.user.name}</span>
 				<form method="POST" action="/logout">
 					<button
-						class="flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-primary"
+						class="flex items-center gap-1.5 text-sm text-muted transition-[color,transform] duration-100 ease-out hover:text-primary active:scale-95 motion-reduce:active:scale-100"
 						type="submit"
 					>
 						<LogOut class="size-4" />

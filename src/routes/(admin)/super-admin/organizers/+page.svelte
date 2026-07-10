@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Organization } from '$lib/api/endpoints/admin';
 	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { toastEnhance } from '$lib/utils/toast';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Tag from '$lib/components/ui/Tag.svelte';
@@ -69,17 +69,19 @@
 	<form
 		method="POST"
 		action="?/create"
-		use:enhance={() => {
-			submitting = true;
-			return async ({ result, update }) => {
-				await update();
+		use:enhance={toastEnhance({
+			success: 'Organizer added',
+			reset: true,
+			before: () => {
+				submitting = true;
+			},
+			onSuccess: () => {
+				createOpen = false;
+			},
+			settle: () => {
 				submitting = false;
-				if (result.type === 'success') {
-					createOpen = false;
-					await invalidateAll();
-				}
-			};
-		}}
+			}
+		})}
 		class="flex flex-col gap-4"
 	>
 		{#if form?.error}

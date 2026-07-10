@@ -63,14 +63,18 @@ export const actions: Actions = {
 		const form = await request.formData();
 		const court_id = String(form.get('court_id') ?? '');
 		const match_id = String(form.get('match_id') ?? '') || null;
-		const date = String(form.get('date') ?? '');
-		const time = String(form.get('time') ?? '');
-		if (!court_id || !date || !time) {
-			return fail(400, { error: 'Court, date and time are required.' });
+		// starts_at is an ISO string from the DateTimePicker (local time already
+		// normalized to UTC by the browser). A slot runs 90 minutes by default.
+		const startsRaw = String(form.get('starts_at') ?? '');
+		if (!court_id || !startsRaw) {
+			return fail(400, { error: 'Court and start time are required.' });
 		}
-		// Build RFC3339; assume the entered wall time is UTC for simplicity.
-		const starts = `${date}T${time}:00Z`;
-		const end = new Date(new Date(starts).getTime() + 90 * 60_000).toISOString();
+		const startDate = new Date(startsRaw);
+		if (Number.isNaN(startDate.getTime())) {
+			return fail(400, { error: 'Invalid start time.' });
+		}
+		const starts = startDate.toISOString();
+		const end = new Date(startDate.getTime() + 90 * 60_000).toISOString();
 		try {
 			await createSlot(
 				{ tournament_id: params.id, court_id, match_id, starts_at: starts, ends_at: end },

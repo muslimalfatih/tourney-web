@@ -5,7 +5,9 @@
 </script>
 
 <div class="flex min-h-screen flex-col bg-bg">
-	<div class="border-b border-border/60">
+	<div
+		class="sticky top-0 z-30 border-b border-border/60 bg-page/80 backdrop-blur-xl backdrop-saturate-150 supports-[not(backdrop-filter:blur(0px))]:bg-page"
+	>
 		<div class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
 			<a href="/" class="flex items-center gap-2 font-semibold text-primary">
 				<Trophy class="size-5 text-accent" />

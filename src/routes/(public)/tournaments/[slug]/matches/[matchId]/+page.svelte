@@ -61,14 +61,6 @@
 <Card padded={false} class="max-w-md">
 	{#each [1, 2] as n (n)}
 		<div class="flex items-center gap-3 px-5 py-4 {n === 2 ? 'border-t border-border' : ''}">
-			{#if slot(n)?.seed != null}
-				<span
-					class="inline-grid size-6 shrink-0 place-items-center rounded-full border border-gold font-display text-[11px] text-gold"
-					>{slot(n)?.seed}</span
-				>
-			{:else}
-				<span class="w-6 shrink-0"></span>
-			{/if}
 			<span
 				class={cn(
 					'flex-1 text-[15px]',

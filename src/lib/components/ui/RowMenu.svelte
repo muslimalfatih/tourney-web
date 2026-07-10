@@ -20,7 +20,7 @@
 		<DropdownMenu.Content
 			sideOffset={6}
 			align="end"
-			class="z-50 min-w-40 rounded-md border border-border bg-surface p-1 shadow-(--shadow-soft)"
+			class="motion-menu z-50 min-w-40 rounded-md border border-border bg-surface p-1 shadow-(--shadow-soft)"
 		>
 			{@render children()}
 		</DropdownMenu.Content>

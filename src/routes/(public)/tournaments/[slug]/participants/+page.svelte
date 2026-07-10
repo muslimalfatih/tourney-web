@@ -40,14 +40,6 @@
 					<ul class="divide-y divide-border">
 						{#each roster.participants as p (p.id)}
 							<li class="flex items-center gap-3 px-5 py-2.5">
-								{#if p.seed != null}
-									<span
-										class="inline-grid size-6 shrink-0 place-items-center rounded-full border border-gold font-display text-[11px] text-gold"
-										>{p.seed}</span
-									>
-								{:else}
-									<span class="w-6 shrink-0 text-center text-muted">·</span>
-								{/if}
 								<span class="text-[13px] text-primary">{p.display_name}</span>
 							</li>
 						{/each}

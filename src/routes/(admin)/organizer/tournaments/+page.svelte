@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Tournament, TournamentStatus } from '$lib/api/types';
 	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { toastEnhance } from '$lib/utils/toast';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Tag from '$lib/components/ui/Tag.svelte';
@@ -28,12 +28,7 @@
 		f.requestSubmit();
 	}
 
-	function statusEnhance() {
-		return async ({ update }: { update: () => Promise<void> }) => {
-			await update();
-			await invalidateAll();
-		};
-	}
+	const statusEnhance = toastEnhance({ success: 'Status updated' });
 
 	const filtered = $derived(
 		statusFilter === 'all'
@@ -150,17 +145,18 @@
 	<form
 		method="POST"
 		action="?/create"
-		use:enhance={() => {
-			submitting = true;
-			return async ({ result, update }) => {
-				await update();
+		use:enhance={toastEnhance({
+			success: 'Tournament created',
+			before: () => {
+				submitting = true;
+			},
+			onSuccess: () => {
+				createOpen = false;
+			},
+			settle: () => {
 				submitting = false;
-				if (result.type === 'success') {
-					createOpen = false;
-					await invalidateAll();
-				}
-			};
-		}}
+			}
+		})}
 		class="flex flex-col gap-4"
 	>
 		{#if form?.error}

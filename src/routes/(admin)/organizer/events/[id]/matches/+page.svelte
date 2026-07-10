@@ -2,7 +2,7 @@
 	import type { EventRow } from '$lib/api/endpoints/events';
 	import type { MatchDetail, MatchSlot } from '$lib/api/endpoints/matches';
 	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { toastEnhance } from '$lib/utils/toast';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Tag from '$lib/components/ui/Tag.svelte';
@@ -110,10 +110,7 @@
 								<form
 									method="POST"
 									action="?/markLive"
-									use:enhance={() => async ({ update }) => {
-										await update();
-										await invalidateAll();
-									}}
+									use:enhance={toastEnhance({ success: 'Match started' })}
 								>
 									<input type="hidden" name="matchId" value={m.id} />
 									<Button type="submit" variant="ghost" size="sm">Start</Button>
@@ -140,17 +137,18 @@
 		<form
 			method="POST"
 			action="?/score"
-			use:enhance={() => {
-				submitting = true;
-				return async ({ result, update }) => {
-					await update();
+			use:enhance={toastEnhance({
+				success: (fd) => (fd.get('complete') === 'true' ? 'Match completed' : 'Score saved'),
+				before: () => {
+					submitting = true;
+				},
+				onSuccess: () => {
+					scoreOpen = false;
+				},
+				settle: () => {
 					submitting = false;
-					if (result.type === 'success') {
-						scoreOpen = false;
-						await invalidateAll();
-					}
-				};
-			}}
+				}
+			})}
 			class="flex flex-col gap-4"
 		>
 			<input type="hidden" name="matchId" value={active.id} />

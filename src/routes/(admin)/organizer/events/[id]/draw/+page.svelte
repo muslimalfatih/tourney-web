@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { EventRow, EventBracket, Standing, GroupKnockout } from '$lib/api/endpoints/events';
 	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { toastEnhance } from '$lib/utils/toast';
 	import BurgundyBracket from '$lib/components/bracket/BurgundyBracket.svelte';
 	import Standings from '$lib/components/bracket/Standings.svelte';
 	import GroupKnockoutView from '$lib/components/bracket/GroupKnockoutView.svelte';
@@ -44,10 +44,7 @@
 			<form
 				method="POST"
 				action="?/resolve"
-				use:enhance={() => async ({ update }) => {
-					await update();
-					await invalidateAll();
-				}}
+				use:enhance={toastEnhance({ success: 'Knockout re-resolved' })}
 			>
 				<Button type="submit" variant="ghost" size="sm">Re-resolve knockout</Button>
 			</form>

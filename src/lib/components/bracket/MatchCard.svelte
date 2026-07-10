@@ -31,11 +31,6 @@
 			isWinner(p) ? 'text-primary' : 'text-muted'
 		)}
 	>
-		{#if p?.seed}
-			<span class="w-4 shrink-0 text-[10px] text-muted/70">{p.seed}</span>
-		{:else}
-			<span class="w-4 shrink-0"></span>
-		{/if}
 		<span class="min-w-0 flex-1 truncate text-sm">
 			{p?.display_name ?? 'TBD'}
 		</span>

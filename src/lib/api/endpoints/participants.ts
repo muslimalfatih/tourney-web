@@ -30,6 +30,11 @@ export function setSeed(id: string, seed: number | null, opts?: RequestOptions) 
 	return apiPatch<Participant>(`/participants/${id}/seed`, { seed }, opts);
 }
 
+// Renames a participant (and the underlying player/team) in place.
+export function renameParticipant(id: string, display_name: string, opts?: RequestOptions) {
+	return apiPatch<Participant>(`/participants/${id}`, { display_name }, opts);
+}
+
 export function deleteParticipant(id: string, opts?: RequestOptions) {
 	return apiDelete<void>(`/participants/${id}`, opts);
 }

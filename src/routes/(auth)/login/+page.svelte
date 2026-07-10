@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { toastEnhance } from '$lib/utils/toast';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import { Trophy } from '@lucide/svelte';
@@ -22,13 +23,15 @@
 			<form
 				method="POST"
 				class="mt-6 space-y-4"
-				use:enhance={() => {
-					submitting = true;
-					return async ({ update }) => {
-						await update();
+				use:enhance={toastEnhance({
+					error: 'Invalid email or password',
+					before: () => {
+						submitting = true;
+					},
+					settle: () => {
 						submitting = false;
-					};
-				}}
+					}
+				})}
 			>
 				{#if form?.error}
 					<p class="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">

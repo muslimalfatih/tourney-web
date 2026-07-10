@@ -2,7 +2,13 @@
 	import type { BracketMatch, BracketSlot } from '$lib/api/endpoints/events';
 	import { cn } from '$lib/utils/cn';
 
-	let { match, href }: { match: BracketMatch; href?: string } = $props();
+	let {
+		match,
+		href,
+		onclick
+	}: { match: BracketMatch; href?: string; onclick?: () => void } = $props();
+
+	const interactive = $derived(!!href || !!onclick);
 
 	function slot(n: number): BracketSlot | undefined {
 		return match.participants.find((p) => p.slot === n);
@@ -20,14 +26,6 @@
 
 {#snippet row(p: BracketSlot | undefined, n: number)}
 	<div class="flex items-center gap-2 px-2.5 py-2">
-		{#if p?.seed != null}
-			<span
-				class="inline-grid size-[18px] shrink-0 place-items-center rounded-full border border-gold font-display text-[10px] text-gold"
-				>{p.seed}</span
-			>
-		{:else}
-			<span class="w-[18px] shrink-0"></span>
-		{/if}
 		<span
 			class={cn(
 				'min-w-0 flex-1 truncate text-[12px]',
@@ -49,12 +47,15 @@
 {/snippet}
 
 <svelte:element
-	this={href ? 'a' : 'div'}
+	this={href ? 'a' : onclick ? 'button' : 'div'}
 	{href}
+	{onclick}
+	type={onclick && !href ? 'button' : undefined}
+	role={onclick && !href ? 'button' : undefined}
 	class={cn(
-		'block w-52 overflow-hidden rounded-md border bg-surface shadow-(--shadow-subtle) transition-colors',
+		'block w-52 overflow-hidden rounded-md border bg-surface text-left shadow-(--shadow-subtle) transition-colors',
 		live ? 'border-accent' : 'border-border',
-		href && 'hover:border-accent/60'
+		interactive && 'cursor-pointer hover:border-accent/60'
 	)}
 >
 	<div

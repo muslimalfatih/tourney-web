@@ -2,7 +2,7 @@
 	import type { Tournament } from '$lib/api/types';
 	import type { EventRow } from '$lib/api/endpoints/events';
 	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { toastEnhance } from '$lib/utils/toast';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Tag from '$lib/components/ui/Tag.svelte';
@@ -164,10 +164,7 @@
 	<form
 		method="POST"
 		action={data.tournament.status === 'published' ? '?/unpublish' : '?/publish'}
-		use:enhance={() => async ({ update }) => {
-			await update();
-			await invalidateAll();
-		}}
+		use:enhance={toastEnhance({ success: 'Status updated' })}
 	>
 		{#if data.tournament.status === 'published'}
 			<Button type="submit" variant="ghost">Unpublish</Button>
@@ -182,17 +179,18 @@
 	<form
 		method="POST"
 		action="?/addEvent"
-		use:enhance={() => {
-			submitting = true;
-			return async ({ result, update }) => {
-				await update();
+		use:enhance={toastEnhance({
+			success: 'Event added',
+			before: () => {
+				submitting = true;
+			},
+			onSuccess: () => {
+				addOpen = false;
+			},
+			settle: () => {
 				submitting = false;
-				if (result.type === 'success') {
-					addOpen = false;
-					await invalidateAll();
-				}
-			};
-		}}
+			}
+		})}
 		class="flex flex-col gap-4"
 	>
 		<Field label="Name"><input name="name" required class={inputClass} placeholder="Men's Singles Open" /></Field>
@@ -224,10 +222,7 @@
 	method="POST"
 	action="?/deleteEvent"
 	class="hidden"
-	use:enhance={() => async ({ update }) => {
-		await update();
-		await invalidateAll();
-	}}
+	use:enhance={toastEnhance({ success: 'Event removed' })}
 >
 	<input type="hidden" name="eventId" bind:value={deleteId} />
 </form>

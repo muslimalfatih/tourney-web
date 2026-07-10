@@ -2,11 +2,13 @@
 	import type { Tournament } from '$lib/api/types';
 	import type { Court, ScheduleSlot } from '$lib/api/endpoints/schedule';
 	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { toastEnhance } from '$lib/utils/toast';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import Field from '$lib/components/ui/Field.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
+	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
 	import RowMenu from '$lib/components/ui/RowMenu.svelte';
 	import RowMenuItem from '$lib/components/ui/RowMenuItem.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
@@ -27,15 +29,34 @@
 	let submitting = $state(false);
 	let slotId = $state('');
 
+	// Slot-modal field state (bits-ui Select / DateTimePicker aren't native form
+	// inputs, so we bind here and forward via hidden fields / the Select `name`).
+	let slotCourt = $state('');
+	let slotMatch = $state('');
+	let slotStartsAt = $state(''); // ISO from the picker
+
 	const assignable = $derived(data.matches.filter((m) => m.playable && !m.scheduled));
+	const courtItems = $derived(data.courts.map((c) => ({ value: c.id, label: c.name })));
+	const matchItems = $derived([
+		{ value: '', label: '— No match (hold slot) —' },
+		...assignable.map((m) => ({ value: m.id, label: m.label }))
+	]);
+
+	// Reset the slot form each time the modal opens; default the court to the
+	// first one so a valid selection is pre-filled.
+	function openSlot() {
+		slotCourt = data.courts[0]?.id ?? '';
+		slotMatch = '';
+		slotStartsAt = '';
+		slotOpen = true;
+	}
 
 	function fmtTime(iso: string): string {
 		return new Date(iso).toLocaleString('en-GB', {
 			day: 'numeric',
 			month: 'short',
 			hour: '2-digit',
-			minute: '2-digit',
-			timeZone: 'UTC'
+			minute: '2-digit'
 		});
 	}
 	function removeSlot(id: string) {
@@ -51,7 +72,7 @@
 	</div>
 	<div class="flex gap-2">
 		<Button variant="ghost" onclick={() => (courtOpen = true)}><Plus class="size-4" /> Court</Button>
-		<Button onclick={() => (slotOpen = true)} disabled={data.courts.length === 0}
+		<Button onclick={openSlot} disabled={data.courts.length === 0}
 			><Plus class="size-4" /> Schedule match</Button
 		>
 	</div>
@@ -113,14 +134,13 @@
 	<form
 		method="POST"
 		action="?/addCourt"
-		use:enhance={() => {
-			submitting = true;
-			return async ({ result, update }) => {
-				await update();
-				submitting = false;
-				if (result.type === 'success') { courtOpen = false; await invalidateAll(); }
-			};
-		}}
+		use:enhance={toastEnhance({
+			success: 'Court added',
+			reset: true,
+			before: () => { submitting = true; },
+			onSuccess: () => { courtOpen = false; },
+			settle: () => { submitting = false; }
+		})}
 		class="flex flex-col gap-4"
 	>
 		<Field label="Court name"><input name="name" required class={inputClass} /></Field>
@@ -136,34 +156,30 @@
 	<form
 		method="POST"
 		action="?/addSlot"
-		use:enhance={() => {
-			submitting = true;
-			return async ({ result, update }) => {
-				await update();
-				submitting = false;
-				if (result.type === 'success') { slotOpen = false; await invalidateAll(); }
-			};
-		}}
+		use:enhance={toastEnhance({
+			success: 'Match scheduled',
+			reset: true,
+			before: () => { submitting = true; },
+			onSuccess: () => { slotOpen = false; },
+			settle: () => { submitting = false; }
+		})}
 		class="flex flex-col gap-4"
 	>
+		<!-- bits-ui Select/DateTimePicker aren't native inputs: the Select emits its
+		     own hidden field via `name`; the picker's ISO goes through this one. -->
+		<input type="hidden" name="starts_at" value={slotStartsAt} />
 		<Field label="Court">
-			<select name="court_id" required class={inputClass}>
-				{#each data.courts as c (c.id)}<option value={c.id}>{c.name}</option>{/each}
-			</select>
+			<Select name="court_id" bind:value={slotCourt} items={courtItems} placeholder="Pick a court" />
 		</Field>
 		<Field label="Match" hint={assignable.length === 0 ? 'No unscheduled matches with both players set' : ''}>
-			<select name="match_id" class={inputClass}>
-				<option value="">— No match (hold slot) —</option>
-				{#each assignable as m (m.id)}<option value={m.id}>{m.label}</option>{/each}
-			</select>
+			<Select name="match_id" bind:value={slotMatch} items={matchItems} placeholder="— No match (hold slot) —" />
 		</Field>
-		<div class="grid grid-cols-2 gap-3">
-			<Field label="Date"><input name="date" type="date" required class={inputClass} /></Field>
-			<Field label="Time (UTC)"><input name="time" type="time" required class={inputClass} /></Field>
-		</div>
+		<Field label="Start">
+			<DateTimePicker bind:value={slotStartsAt} />
+		</Field>
 		<div class="mt-2 flex justify-end gap-2">
 			<Button type="button" variant="ghost" onclick={() => (slotOpen = false)}>Cancel</Button>
-			<Button type="submit" disabled={submitting}>Schedule</Button>
+			<Button type="submit" disabled={submitting || !slotCourt || !slotStartsAt}>Schedule</Button>
 		</div>
 	</form>
 </Modal>
@@ -173,7 +189,7 @@
 	method="POST"
 	action="?/deleteSlot"
 	class="hidden"
-	use:enhance={() => async ({ update }) => { await update(); await invalidateAll(); }}
+	use:enhance={toastEnhance({ success: 'Slot removed' })}
 >
 	<input type="hidden" name="slotId" bind:value={slotId} />
 </form>

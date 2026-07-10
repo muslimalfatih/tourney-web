@@ -1,9 +1,14 @@
 import { apiGet, apiPost, apiDelete, type RequestOptions } from '$lib/api/client';
 import type { EventDivision, EventFormat, EventDiscipline } from '$lib/api/types';
 
+// How an event's round-1 pairs were decided (Match builder). 'auto' = random,
+// 'manual' = organizer-supplied pairings.
+export type PairingMode = 'auto' | 'manual';
+
 // Event carries rolled-up counts from the API for list display.
 export interface EventRow extends EventDivision {
 	tournament_id: string;
+	pairing_mode: PairingMode;
 	participant_count: number;
 	match_count: number;
 }
@@ -34,6 +39,29 @@ export function generateDraw(eventId: string, opts?: RequestOptions) {
 	return apiPost<{ event_id: string; matches: number; generated: boolean }>(
 		`/events/${eventId}/draw`,
 		undefined,
+		opts
+	);
+}
+
+// One round-1 matchup submitted from the Match builder. Either side may be null
+// for a bye; a fully-null pair is dropped server-side.
+export interface BuildMatchInput {
+	team_a_id: string | null;
+	team_b_id: string | null;
+}
+
+export interface BuildBracketInput {
+	pairing_mode: PairingMode;
+	// Ignored by the server in 'auto' mode; required (and validated) in 'manual'.
+	matches?: BuildMatchInput[];
+}
+
+// buildBracket runs the Match builder: builds a single-elim bracket from random
+// pairs (auto) or explicit round-1 pairings (manual), overwriting any prior draw.
+export function buildBracket(eventId: string, input: BuildBracketInput, opts?: RequestOptions) {
+	return apiPost<{ event_id: string; matches: number; pairing_mode: PairingMode; generated: boolean }>(
+		`/events/${eventId}/bracket/build`,
+		input,
 		opts
 	);
 }

@@ -23,9 +23,9 @@
 
 <Dialog.Root bind:open>
 	<Dialog.Portal>
-		<Dialog.Overlay class="fixed inset-0 z-50 bg-primary/40 backdrop-blur-[2px]" />
+		<Dialog.Overlay class="motion-overlay fixed inset-0 z-50 bg-primary/40 backdrop-blur-[2px]" />
 		<Dialog.Content
-			class="fixed left-1/2 top-1/2 z-50 w-[min(92vw,32rem)] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-surface p-6 shadow-(--shadow-soft) focus-visible:outline-none"
+			class="motion-modal fixed left-1/2 top-1/2 z-50 w-[min(92vw,32rem)] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-surface p-6 shadow-(--shadow-soft) focus-visible:outline-none"
 		>
 			<div class="mb-4 flex items-start justify-between gap-4">
 				<div>

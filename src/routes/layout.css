@@ -83,3 +83,92 @@ h3,
 .tabular {
 	font-variant-numeric: tabular-nums;
 }
+
+/*
+ * Motion — Apple "fluid interfaces" translated to CSS. Overlays materialize
+ * (scale + opacity together) instead of a flat fade; popovers grow from their
+ * trigger via the Floating UI transform-origin bits-ui exposes. Enter-only:
+ * bits-ui unmounts portalled content on close, so there is no exit frame to
+ * animate without forceMount plumbing per component.
+ * ponytail: enter animation covers the perceptible 80%; add forceMount + exit
+ * keyframes if closing needs to animate too.
+ */
+@keyframes overlay-in {
+	from {
+		opacity: 0;
+	}
+}
+@keyframes content-pop-in {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.96);
+	}
+}
+@keyframes menu-pop-in {
+	from {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+}
+
+/* Snappy ease with a hair of overshoot — reads as a material arriving. */
+.motion-overlay[data-state='open'] {
+	animation: overlay-in 180ms ease-out;
+}
+.motion-modal[data-state='open'] {
+	animation: content-pop-in 200ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.motion-menu[data-state='open'] {
+	transform-origin: var(--bits-floating-transform-origin, center);
+	animation: menu-pop-in 160ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* Reduced motion: gentle cross-fade, no scale/overshoot (Apple §14). */
+@media (prefers-reduced-motion: reduce) {
+	.motion-overlay[data-state='open'],
+	.motion-modal[data-state='open'],
+	.motion-menu[data-state='open'] {
+		animation: overlay-in 120ms ease both;
+	}
+}
+
+/* Toasts (svelte-sonner). Deliberately restrained: one calm --color-surface
+   material for every type, a small line icon carrying the only colour, plain
+   primary title. No tinted cards, no stripe, no filled-disc icons — those read
+   loud and generic. Colour lives in the 16px icon; the card stays quiet. */
+[data-sonner-toaster] {
+	--width: 356px;
+	--gap: 10px;
+	font-family: var(--font-body);
+	/* Pin close to the top-right (sonner's default is top-left, which sits over
+	   the leading icon). !important because sonner's component styles inject
+	   after this file and set these same vars at equal specificity. */
+	--toast-close-button-start: unset !important;
+	--toast-close-button-end: 0 !important;
+	--toast-close-button-transform: translate(35%, -35%) !important;
+}
+[data-sonner-toast] {
+	gap: 10px;
+	padding: 13px 14px;
+	align-items: center;
+}
+[data-sonner-toast] [data-icon] {
+	width: 16px;
+	height: 16px;
+	margin: 0;
+}
+[data-sonner-toast] [data-icon] svg {
+	width: 16px;
+	height: 16px;
+}
+[data-sonner-toast][data-type='success'] [data-icon] {
+	color: var(--color-accent);
+}
+[data-sonner-toast][data-type='error'] [data-icon] {
+	color: var(--color-danger);
+}
+[data-sonner-toast] [data-close-button] {
+	background: var(--color-surface);
+	border-color: var(--color-border);
+	color: var(--color-muted);
+}

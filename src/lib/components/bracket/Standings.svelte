@@ -26,11 +26,7 @@
 					{#each standings as s, i (s.participant_id)}
 						<tr class="border-b border-border transition-colors hover:bg-subtle">
 							<td class="px-4 py-2.5 font-display text-muted">{i + 1}</td>
-							<td class="px-4 py-2.5 font-bold text-primary">
-								{#if s.seed != null}
-									<span class="mr-1.5 text-[11px] text-gold">[{s.seed}]</span>
-								{/if}{s.display_name}
-							</td>
+							<td class="px-4 py-2.5 font-bold text-primary">{s.display_name}</td>
 							<td class="px-3 py-2.5 text-center tabular-nums text-muted">{s.played}</td>
 							<td class="px-3 py-2.5 text-center tabular-nums font-bold text-accent">{s.won}</td>
 							<td class="px-3 py-2.5 text-center tabular-nums text-muted">{s.lost}</td>

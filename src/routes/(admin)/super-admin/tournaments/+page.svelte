@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { GlobalTournament } from '$lib/api/endpoints/admin';
 	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { toastEnhance } from '$lib/utils/toast';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Tag from '$lib/components/ui/Tag.svelte';
@@ -70,10 +70,7 @@
 	method="POST"
 	action="?/oversight"
 	class="hidden"
-	use:enhance={() => async ({ update }) => {
-		await update();
-		await invalidateAll();
-	}}
+	use:enhance={toastEnhance({ success: 'Tournament updated', reset: true })}
 >
 	<input type="hidden" name="id" bind:value={actId} />
 	<input type="hidden" name="action" bind:value={actKind} />
