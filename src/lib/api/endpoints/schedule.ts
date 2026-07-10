@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiDelete, type RequestOptions } from '$lib/api/client';
+import { apiGet, apiPost, apiPatch, apiDelete, type RequestOptions } from '$lib/api/client';
 
 export interface Court {
 	id: string;
@@ -46,6 +46,17 @@ export interface CreateSlotInput {
 
 export function createSlot(input: CreateSlotInput, opts?: RequestOptions) {
 	return apiPost<ScheduleSlot>('/schedule/slots', input, opts);
+}
+
+export interface UpdateSlotInput {
+	court_id: string;
+	match_id?: string | null;
+	starts_at: string;
+	ends_at: string;
+}
+
+export function updateSlot(id: string, input: UpdateSlotInput, opts?: RequestOptions) {
+	return apiPatch<ScheduleSlot>(`/schedule/slots/${id}`, input, opts);
 }
 
 export function deleteSlot(id: string, opts?: RequestOptions) {

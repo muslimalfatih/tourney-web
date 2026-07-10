@@ -2,6 +2,25 @@
 @plugin '@tailwindcss/typography';
 
 /*
+ * Cursor affordance — Tailwind's preflight sets `cursor: default` on <button>.
+ * Every enabled button / summary / [role=button] and any element opting into
+ * click via `data-clickable` should show the hand. Disabled controls fall back
+ * to not-allowed so the cursor always reflects the real affordance (Apple §16.7).
+ */
+@layer base {
+	button:not(:disabled),
+	summary,
+	[role='button']:not([aria-disabled='true']),
+	label[for] {
+		cursor: pointer;
+	}
+	button:disabled,
+	[aria-disabled='true'] {
+		cursor: not-allowed;
+	}
+}
+
+/*
  * LAGA BURGUNDY — light-only design system (v2 palette).
  * Mapped into Tailwind v4 @theme so utilities like `bg-surface`,
  * `text-muted`, `border-subtle`, `text-accent`, `rounded-lg` resolve to the

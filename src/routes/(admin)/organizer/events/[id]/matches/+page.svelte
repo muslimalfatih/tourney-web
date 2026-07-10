@@ -103,17 +103,31 @@
 							</div>
 						{/each}
 					</div>
-					<Tag tone={tone(m.status)} class="shrink-0">{m.status}</Tag>
+					{#if m.status === 'live'}
+						<span
+							class="inline-flex shrink-0 items-center gap-1.5 rounded-pill bg-danger/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-danger"
+						>
+							<span class="size-1.5 animate-pulse rounded-full bg-danger motion-reduce:animate-none"
+							></span>
+							Live
+						</span>
+					{:else}
+						<Tag tone={tone(m.status)} class="shrink-0">{m.status}</Tag>
+					{/if}
 					<div class="flex shrink-0 gap-1">
 						{#if playable(m) && m.status !== 'completed'}
 							{#if m.status !== 'live'}
+								<!-- One-click Mark live quick action on pending, playable rows. -->
 								<form
 									method="POST"
 									action="?/markLive"
 									use:enhance={toastEnhance({ success: 'Match started' })}
 								>
 									<input type="hidden" name="matchId" value={m.id} />
-									<Button type="submit" variant="ghost" size="sm">Start</Button>
+									<Button type="submit" variant="ghost" size="sm">
+										<span class="mr-1 inline-block size-1.5 rounded-full bg-danger align-middle"></span>
+										Mark live
+									</Button>
 								</form>
 							{/if}
 							<Button variant="ghost" size="sm" onclick={() => openScore(m)}>Score</Button>

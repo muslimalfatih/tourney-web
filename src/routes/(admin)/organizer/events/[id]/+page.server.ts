@@ -2,12 +2,20 @@ import type { Actions, PageServerLoad } from './$types';
 import { error, fail } from '@sveltejs/kit';
 import {
 	getEvent,
-	getEventBracket,
+	getOrgEventBracket,
+	getOrgGroupKnockout,
+	updateGroupAdvance,
 	buildBracket,
-	generateDraw,
+	addManualMatch,
+	deleteManualMatch,
+	setGroups,
+	updateEvent,
 	type BuildMatchInput,
-	type PairingMode
+	type UpdateEventInput,
+	type GroupKnockout
 } from '$lib/api/endpoints/events';
+import type { EventGender } from '$lib/api/types';
+import { getTournament } from '$lib/api/endpoints/tournaments';
 import {
 	listParticipants,
 	addParticipant,
@@ -23,13 +31,21 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	try {
 		const event = await getEvent(params.id, { fetch, token });
 		// Courts are per-tournament; the bracket read-model is empty until a draw
-		// exists. Both are needed by the Bracket tab (scheduling + rendering).
-		const [participants, bracket, courts] = await Promise.all([
+		// exists. The tournament gives us the slug (public URL preview on the
+		// Public settings tab) + description.
+		const [participants, bracket, courts, tournament] = await Promise.all([
 			listParticipants(params.id, { fetch, token }),
-			getEventBracket(params.id, { fetch, token }),
-			listCourts(event.tournament_id, { fetch, token })
+			getOrgEventBracket(params.id, { fetch, token }),
+			listCourts(event.tournament_id, { fetch, token }),
+			getTournament(event.tournament_id, { fetch, token })
 		]);
-		return { event, participants, bracket, courts };
+		// Group-knockout events also need per-group standings for the Overview
+		// group panel. Other formats have no groups — skip the fetch.
+		let groupKnockout: GroupKnockout | null = null;
+		if (event.has_group_stage && event.format === 'group_knockout') {
+			groupKnockout = await getOrgGroupKnockout(params.id, { fetch, token }).catch(() => null);
+		}
+		return { event, participants, bracket, courts, tournament, groupKnockout };
 	} catch (e) {
 		if (e instanceof ApiError && e.status === 404) throw error(404, 'Event not found');
 		throw error(502, 'Failed to load event');
@@ -37,6 +53,49 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 };
 
 export const actions: Actions = {
+	// Public settings tab: patch the event's public-facing config. Only the keys
+	// present in the form are sent, so omitted fields stay unchanged server-side.
+	updatePublicSettings: async ({ params, request, locals, fetch }) => {
+		const form = await request.formData();
+		const patch: UpdateEventInput = {
+			category: String(form.get('category') ?? ''),
+			gender: String(form.get('gender') ?? 'mixed') as EventGender,
+			is_public: form.get('is_public') === 'on',
+			public_display_name: String(form.get('public_display_name') ?? '')
+		};
+		const orderRaw = String(form.get('public_order') ?? '').trim();
+		if (orderRaw !== '') {
+			const n = Number(orderRaw);
+			if (!Number.isInteger(n) || n < 0) return fail(400, { error: 'Order must be a whole number ≥ 0.' });
+			patch.public_order = n;
+		}
+		try {
+			await updateEvent(params.id, patch, { fetch, token: locals.session.accessToken });
+			return { publicSettingsSaved: true };
+		} catch (e) {
+			return fail(500, { error: e instanceof ApiError ? e.message : 'Could not save settings.' });
+		}
+	},
+
+	// Overview group panel: edit how many teams advance from a group.
+	setGroupAdvance: async ({ params, request, locals, fetch }) => {
+		const form = await request.formData();
+		const groupId = String(form.get('groupId') ?? '');
+		const advance = Number(String(form.get('advance_count') ?? ''));
+		if (!groupId) return fail(400, { error: 'Missing group.' });
+		if (!Number.isInteger(advance) || advance < 1)
+			return fail(400, { error: 'Advance count must be a whole number ≥ 1.' });
+		try {
+			await updateGroupAdvance(params.id, groupId, advance, {
+				fetch,
+				token: locals.session.accessToken
+			});
+			return { groupAdvanceSaved: true };
+		} catch (e) {
+			return fail(500, { error: e instanceof ApiError ? e.message : 'Could not update.' });
+		}
+	},
+
 	addParticipant: async ({ params, request, locals, fetch }) => {
 		const form = await request.formData();
 		const display_name = String(form.get('display_name') ?? '').trim();
@@ -73,47 +132,74 @@ export const actions: Actions = {
 		}
 	},
 
-	// build runs the Match builder: auto (random pairs) or manual (explicit R1
-	// pairings), overwriting any existing draw. The manual `matches` payload is a
+	// build runs the single-elim Match builder from explicit round-1 pairings
+	// (manual only), overwriting any existing draw. The `matches` payload is a
 	// JSON array of { team_a_id, team_b_id } (either may be null for a bye).
 	build: async ({ params, request, locals, fetch }) => {
 		const form = await request.formData();
-		const mode = String(form.get('pairing_mode') ?? 'auto') as PairingMode;
-		let matches: BuildMatchInput[] | undefined;
-		if (mode === 'manual') {
-			try {
-				matches = JSON.parse(String(form.get('matches') ?? '[]')) as BuildMatchInput[];
-			} catch {
-				return fail(400, { error: 'Could not read the pairings.' });
-			}
+		let matches: BuildMatchInput[];
+		try {
+			matches = JSON.parse(String(form.get('matches') ?? '[]')) as BuildMatchInput[];
+		} catch {
+			return fail(400, { error: 'Could not read the pairings.' });
 		}
 		try {
-			const res = await buildBracket(
-				params.id,
-				{ pairing_mode: mode, matches },
-				{ fetch, token: locals.session.accessToken }
-			);
+			const res = await buildBracket(params.id, matches, {
+				fetch,
+				token: locals.session.accessToken
+			});
 			return { built: true, matches: res.matches };
 		} catch (e) {
-			return fail(
-				e instanceof ApiError ? e.status : 500,
-				{ error: e instanceof ApiError ? e.message : 'Could not build the bracket.' }
-			);
+			return fail(e instanceof ApiError ? e.status : 500, {
+				error: e instanceof ApiError ? e.message : 'Could not build the bracket.'
+			});
 		}
 	},
 
-	// generate is the non-single-elim draw path (round robin, group knockout).
-	// The Match builder / build endpoint is single-elim only; these formats use
-	// the format-agnostic generator, which clears and rebuilds the draw.
-	generate: async ({ params, locals, fetch }) => {
+	// Round-robin: add / remove a single fixture (manual setup).
+	addManualMatch: async ({ params, request, locals, fetch }) => {
+		const form = await request.formData();
+		const a = String(form.get('team_a_id') ?? '');
+		const b = String(form.get('team_b_id') ?? '');
+		if (!a || !b) return fail(400, { error: 'Pick both teams.' });
+		if (a === b) return fail(400, { error: 'A match needs two different teams.' });
 		try {
-			await generateDraw(params.id, { fetch, token: locals.session.accessToken });
-			return { generated: true };
+			await addManualMatch(params.id, a, b, { fetch, token: locals.session.accessToken });
+			return { fixtureAdded: true };
 		} catch (e) {
-			return fail(
-				e instanceof ApiError ? e.status : 500,
-				{ error: e instanceof ApiError ? e.message : 'Could not generate the draw.' }
-			);
+			return fail(500, { error: e instanceof ApiError ? e.message : 'Could not add the fixture.' });
+		}
+	},
+
+	deleteManualMatch: async ({ request, locals, fetch }) => {
+		const matchId = String((await request.formData()).get('matchId') ?? '');
+		try {
+			await deleteManualMatch(matchId, { fetch, token: locals.session.accessToken });
+			return { fixtureRemoved: true };
+		} catch (e) {
+			return fail(500, { error: e instanceof ApiError ? e.message : 'Could not remove the fixture.' });
+		}
+	},
+
+	// Group-knockout: assign teams to groups + build fixtures.
+	setGroups: async ({ params, request, locals, fetch }) => {
+		const form = await request.formData();
+		let groups: { name: string; advance_count: number; team_ids: string[] }[];
+		try {
+			groups = JSON.parse(String(form.get('groups') ?? '[]'));
+		} catch {
+			return fail(400, { error: 'Could not read the groups.' });
+		}
+		try {
+			const res = await setGroups(params.id, groups, {
+				fetch,
+				token: locals.session.accessToken
+			});
+			return { groupsBuilt: true, matches: res.matches };
+		} catch (e) {
+			return fail(e instanceof ApiError ? e.status : 500, {
+				error: e instanceof ApiError ? e.message : 'Could not build the group draw.'
+			});
 		}
 	},
 

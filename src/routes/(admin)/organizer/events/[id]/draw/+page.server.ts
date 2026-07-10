@@ -2,8 +2,8 @@ import type { Actions, PageServerLoad } from './$types';
 import { error, fail, redirect } from '@sveltejs/kit';
 import {
 	getEvent,
-	getEventStandings,
-	getGroupKnockout,
+	getOrgEventStandings,
+	getOrgGroupKnockout,
 	resolveGroups
 } from '$lib/api/endpoints/events';
 import { ApiError } from '$lib/api/client';
@@ -28,10 +28,10 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 	try {
 		if (event.format === 'round_robin') {
-			const s = await getEventStandings(params.id, { fetch, token });
+			const s = await getOrgEventStandings(params.id, { fetch, token });
 			return { event, bracket: null, standings: s.standings, groupKnockout: null };
 		}
-		const gk = await getGroupKnockout(params.id, { fetch, token });
+		const gk = await getOrgGroupKnockout(params.id, { fetch, token });
 		return { event, bracket: null, standings: null, groupKnockout: gk };
 	} catch (e) {
 		if (e instanceof ApiError && e.status === 404) throw error(404, 'Event not found');

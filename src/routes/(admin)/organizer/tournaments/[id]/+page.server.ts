@@ -5,7 +5,8 @@ import {
 	publishTournament,
 	unpublishTournament
 } from '$lib/api/endpoints/tournaments';
-import { listEvents, createEvent, deleteEvent } from '$lib/api/endpoints/events';
+import { listEvents, createEvent, deleteEvent, updateEvent } from '$lib/api/endpoints/events';
+import type { EventGender } from '$lib/api/types';
 import { ApiError } from '$lib/api/client';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
@@ -24,21 +25,29 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 export const actions: Actions = {
 	addEvent: async ({ params, request, locals, fetch }) => {
+		const token = locals.session.accessToken;
 		const form = await request.formData();
 		const name = String(form.get('name') ?? '').trim();
 		const discipline = String(form.get('discipline') ?? 'singles');
 		const format = String(form.get('format') ?? 'single_elim');
+		const category = String(form.get('category') ?? '').trim();
+		const gender = String(form.get('gender') ?? 'mixed');
 		if (!name) return fail(400, { error: 'An event name is required.' });
 		try {
-			await createEvent(
+			const created = await createEvent(
 				params.id,
 				{
 					name,
 					discipline: discipline as 'singles' | 'doubles',
 					format: format as 'single_elim' | 'round_robin' | 'group_knockout'
 				},
-				{ fetch, token: locals.session.accessToken }
+				{ fetch, token }
 			);
+			// Create takes only name/discipline/format; apply the public-facing
+			// category/gender in a follow-up patch when they were supplied.
+			if (category || gender !== 'mixed') {
+				await updateEvent(created.id, { category, gender: gender as EventGender }, { fetch, token });
+			}
 			return { added: true };
 		} catch (e) {
 			return fail(500, { error: e instanceof ApiError ? e.message : 'Could not add the event.' });

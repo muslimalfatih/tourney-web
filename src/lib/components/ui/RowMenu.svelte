@@ -12,7 +12,7 @@
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger
 		aria-label={label}
-		class="inline-grid size-8 place-items-center rounded-pill border border-border text-muted transition-colors hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+		class="inline-grid size-8 cursor-pointer place-items-center rounded-pill border border-border text-muted transition-colors hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
 	>
 		<EllipsisVertical class="size-4" />
 	</DropdownMenu.Trigger>

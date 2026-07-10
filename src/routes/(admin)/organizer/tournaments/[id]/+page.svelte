@@ -10,9 +10,12 @@
 	import Field from '$lib/components/ui/Field.svelte';
 	import RowMenu from '$lib/components/ui/RowMenu.svelte';
 	import RowMenuItem from '$lib/components/ui/RowMenuItem.svelte';
+	import Chip from '$lib/components/ui/Chip.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
 	import { inputClass } from '$lib/utils/ui';
-	import { Plus, Users, GitBranch, Calendar } from '@lucide/svelte';
+	import type { EventGender } from '$lib/api/types';
+	import { Plus, Users, GitBranch, Calendar, ExternalLink } from '@lucide/svelte';
 
 	let {
 		data,
@@ -37,6 +40,34 @@
 		const f = document.getElementById('delEventForm') as HTMLFormElement;
 		f.requestSubmit();
 	}
+
+	// --- Filter bar (category / gender / phase), mirrors the public page ---
+	// Distinct categories present across this tournament's events (uncategorised
+	// events group under an explicit bucket so they stay reachable).
+	const UNCATEGORISED = '__none__';
+	const categories = $derived([
+		...new Set(data.events.map((e) => e.category?.trim() || UNCATEGORISED))
+	]);
+	let catFilter = $state<string | null>(null); // null = all
+	let genderFilter = $state<EventGender | null>(null); // null = all
+	let phaseFilter = $state<'group' | 'knockout' | null>(null); // null = all
+
+	const filtered = $derived(
+		data.events.filter((e) => {
+			if (catFilter !== null && (e.category?.trim() || UNCATEGORISED) !== catFilter) return false;
+			if (genderFilter !== null && e.gender !== genderFilter) return false;
+			if (phaseFilter === 'group' && !e.has_group_stage) return false;
+			if (phaseFilter === 'knockout' && !e.has_knockout_stage) return false;
+			return true;
+		})
+	);
+
+	const catLabel = (c: string) => (c === UNCATEGORISED ? 'Uncategorised' : c);
+	const genders: EventGender[] = ['men', 'women', 'mixed'];
+
+	// Fixed category set for new events (skill levels). Existing events with other
+	// values still display in the table/filter; new ones pick from this list.
+	const CATEGORY_OPTIONS = ['Newbie', 'Beginner', 'Intermediate', 'Advanced', 'Open'];
 </script>
 
 <!-- Header -->
@@ -55,10 +86,21 @@
 				· /{data.tournament.slug}
 			</p>
 		</div>
-		<Tag
-			tone={data.tournament.status === 'published' ? 'published' : 'draft'}
-			class="text-[11px]">{data.tournament.status}</Tag
-		>
+		<div class="flex items-center gap-3">
+			{#if data.tournament.status === 'published'}
+				<a
+					href="/tournaments/{data.tournament.slug}/bracket"
+					target="_blank"
+					rel="noopener"
+				>
+					<Button variant="ghost" size="sm"><ExternalLink class="size-4" /> View public page</Button>
+				</a>
+			{/if}
+			<Tag
+				tone={data.tournament.status === 'published' ? 'published' : 'draft'}
+				class="text-[11px]">{data.tournament.status}</Tag
+			>
+		</div>
 	</div>
 </div>
 
@@ -66,6 +108,49 @@
 	<p class="mb-4 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
 		{form.error}
 	</p>
+{/if}
+
+<!-- Filter bar: category / gender / phase — shared pill controls, same as public. -->
+{#if data.events.length > 0}
+	<Card class="mb-4 flex flex-wrap items-center justify-between gap-3">
+		<div class="flex flex-wrap items-center gap-2">
+			<span class="mr-1 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Category</span>
+			<Chip active={catFilter === null} onclick={() => (catFilter = null)}>All</Chip>
+			{#each categories as c (c)}
+				<Chip active={catFilter === c} onclick={() => (catFilter = c)}>{catLabel(c)}</Chip>
+			{/each}
+		</div>
+
+		<div class="flex flex-wrap items-center gap-3">
+			<div class="flex items-center gap-2">
+				<span class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Gender</span>
+				<SegmentedControl
+					options={[
+						{ value: null, label: 'All' },
+						{ value: 'men', label: 'Men' },
+						{ value: 'women', label: 'Women' },
+						{ value: 'mixed', label: 'Mixed' }
+					]}
+					value={genderFilter}
+					onchange={(g) => (genderFilter = g as EventGender | null)}
+					size="sm"
+				/>
+			</div>
+			<div class="flex items-center gap-2">
+				<span class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Phase</span>
+				<SegmentedControl
+					options={[
+						{ value: null, label: 'All' },
+						{ value: 'group', label: 'Group' },
+						{ value: 'knockout', label: 'Knockout' }
+					]}
+					value={phaseFilter}
+					onchange={(p) => (phaseFilter = p as 'group' | 'knockout' | null)}
+					size="sm"
+				/>
+			</div>
+		</div>
+	</Card>
 {/if}
 
 <!-- Events / divisions card -->
@@ -88,10 +173,10 @@
 		</div>
 	{:else}
 		<div class="overflow-x-auto">
-			<table class="w-full min-w-[560px] border-collapse text-[13px]">
+			<table class="w-full min-w-[640px] border-collapse text-[13px]">
 				<thead>
 					<tr class="border-b border-border text-left">
-						{#each ['Division', 'Discipline', 'Format', 'Teams', 'Matches', ''] as h, hi (hi)}
+						{#each ['Division', 'Category', 'Gender', 'Format', 'Teams', 'Public', ''] as h, hi (hi)}
 							<th class="px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted"
 								>{h}</th
 							>
@@ -99,13 +184,18 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each data.events as ev (ev.id)}
+					{#each filtered as ev (ev.id)}
 						<tr class="border-b border-border transition-colors hover:bg-subtle">
 							<td class="px-5 py-3 font-bold text-primary">{ev.name}</td>
-							<td class="px-5 py-3 capitalize text-muted">{ev.discipline}</td>
+							<td class="px-5 py-3 text-muted">{ev.category?.trim() || '—'}</td>
+							<td class="px-5 py-3 capitalize text-muted">{ev.gender}</td>
 							<td class="px-5 py-3 text-muted">{formatLabel[ev.format] ?? ev.format}</td>
 							<td class="tabular px-5 py-3">{ev.participant_count}</td>
-							<td class="tabular px-5 py-3">{ev.match_count}</td>
+							<td class="px-5 py-3">
+								<Tag tone={ev.is_public ? 'published' : 'draft'} class="text-[10px]"
+									>{ev.is_public ? 'Public' : 'Hidden'}</Tag
+								>
+							</td>
 							<td class="px-5 py-3">
 								<div class="flex items-center justify-end gap-1">
 									<a href="/organizer/events/{ev.id}"
@@ -115,12 +205,33 @@
 										<RowMenuItem onSelect={() => (window.location.href = `/organizer/events/${ev.id}`)}>
 											Configure &amp; draw
 										</RowMenuItem>
+										<RowMenuItem
+											onSelect={() => (window.location.href = `/organizer/events/${ev.id}?tab=public`)}
+										>
+											Public settings
+										</RowMenuItem>
 										<RowMenuItem danger onSelect={() => deleteEvent(ev.id)}>Delete</RowMenuItem>
 									</RowMenu>
 								</div>
 							</td>
 						</tr>
 					{/each}
+					{#if filtered.length === 0}
+						<tr>
+							<td colspan="7" class="px-5 py-8 text-center text-sm text-muted">
+								No divisions match this filter.
+								<button
+									type="button"
+									class="text-accent underline-offset-2 hover:underline"
+									onclick={() => {
+										catFilter = null;
+										genderFilter = null;
+										phaseFilter = null;
+									}}>Clear filters</button
+								>
+							</td>
+						</tr>
+					{/if}
 				</tbody>
 			</table>
 		</div>
@@ -206,6 +317,22 @@
 					<option value="single_elim">Single elimination</option>
 					<option value="round_robin">Round robin</option>
 					<option value="group_knockout">Group → knockout</option>
+				</select>
+			</Field>
+		</div>
+		<div class="grid grid-cols-2 gap-3">
+			<Field label="Category">
+				<select name="category" class={inputClass}>
+					{#each CATEGORY_OPTIONS as c (c)}
+						<option value={c}>{c}</option>
+					{/each}
+				</select>
+			</Field>
+			<Field label="Gender">
+				<select name="gender" class={inputClass}>
+					<option value="men">Men</option>
+					<option value="women">Women</option>
+					<option value="mixed" selected>Mixed</option>
 				</select>
 			</Field>
 		</div>

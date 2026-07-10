@@ -38,7 +38,7 @@
 <Select.Root type="single" bind:value {name} {disabled} {onValueChange} allowDeselect>
 	<Select.Trigger
 		{id}
-		class="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-border bg-page px-3 text-[13px] text-primary outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/30 disabled:opacity-60 data-[state=open]:border-accent {klass}"
+		class="flex h-10 w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-border bg-page px-3 text-[13px] text-primary outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-60 data-[state=open]:border-accent {klass}"
 	>
 		<span class="truncate text-left {selectedLabel ? '' : 'text-muted'}">
 			{selectedLabel ?? placeholder}

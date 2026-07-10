@@ -79,7 +79,7 @@
 				{/snippet}
 			</DatePicker.Input>
 			<DatePicker.Trigger
-				class="absolute right-1 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-pill text-muted transition-colors hover:bg-subtle hover:text-primary"
+				class="absolute right-1 top-1/2 grid size-8 -translate-y-1/2 cursor-pointer place-items-center rounded-pill text-muted transition-colors hover:bg-subtle hover:text-primary"
 				aria-label="Open calendar"
 			>
 				<CalendarDays class="size-4" />

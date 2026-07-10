@@ -31,6 +31,7 @@
 	}
 	// Both sides must hold a real participant before a match can be scored.
 	const playable = $derived(!!slot(1)?.participant_id && !!slot(2)?.participant_id);
+	const isCompleted = $derived(match?.status === 'completed');
 
 	const tone = (s: string) =>
 		s === 'completed' ? 'published' : s === 'live' ? 'gold' : s === 'bye' ? 'archived' : 'draft';
@@ -41,17 +42,22 @@
 	let startsAt = $state('');
 	let submitting = $state(false);
 
-	// Re-seed the local form whenever a different match is opened.
+	// Re-seed the local form when a different match opens OR when the same match's
+	// persisted data changes (after a save → invalidateAll brings fresh sets/
+	// status). Keyed on a snapshot so mid-edit typing doesn't retrigger a re-seed.
+	const seedKey = $derived(
+		match ? `${match.id}:${match.status}:${JSON.stringify(match.sets ?? [])}` : ''
+	);
 	let seededFor = $state('');
 	$effect(() => {
-		if (match && match.id !== seededFor) {
+		if (match && seedKey !== seededFor) {
 			sets =
 				match.sets?.length > 0
 					? match.sets.map((s) => ({ p1: String(s.p1), p2: String(s.p2) }))
 					: [{ p1: '', p2: '' }];
 			court = '';
 			startsAt = '';
-			seededFor = match.id;
+			seededFor = seedKey;
 		}
 	});
 
@@ -124,7 +130,9 @@
 				</div>
 			</form>
 
-			<!-- Score. Completing advances the winner (single_elim logic). -->
+			<!-- Score. Completing advances the winner (single_elim logic). The panel
+			     stays open after saving so the organizer can verify the result and
+			     correct it if the score was wrong (re-completing re-advances). -->
 			{#if playable}
 				<form
 					method="POST"
@@ -135,16 +143,18 @@
 						before: () => {
 							submitting = true;
 						},
-						onSuccess: () => {
-							open = false;
-						},
 						settle: () => {
 							submitting = false;
 						}
 					})}
 					class="flex flex-col gap-3 border-t border-border pt-4"
 				>
-					<h4 class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Score</h4>
+					<div class="flex items-center justify-between">
+						<h4 class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Score</h4>
+						{#if isCompleted}
+							<span class="text-[11px] text-muted">Completed — edit to correct</span>
+						{/if}
+					</div>
 					<input type="hidden" name="matchId" value={match.id} />
 					<div class="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-[13px]">
 						<span></span>
@@ -189,7 +199,7 @@
 							Save progress
 						</Button>
 						<Button type="submit" name="complete" value="true" disabled={submitting}>
-							{submitting ? 'Saving…' : 'Complete match'}
+							{submitting ? 'Saving…' : isCompleted ? 'Update result' : 'Complete match'}
 						</Button>
 					</div>
 				</form>

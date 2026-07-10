@@ -1,31 +1,26 @@
 <script lang="ts">
-	import type { EventRow, PairingMode } from '$lib/api/endpoints/events';
 	import type { Participant } from '$lib/api/endpoints/participants';
-	import { untrack } from 'svelte';
+	import type { EventBracket } from '$lib/api/endpoints/events';
 	import { enhance } from '$app/forms';
 	import { toastEnhance } from '$lib/utils/toast';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import { inputClass } from '$lib/utils/ui';
-	import { Shuffle, Eraser, Search, ArrowRight } from '@lucide/svelte';
+	import { Eraser, Search, ArrowRight } from '@lucide/svelte';
 
 	let {
-		event,
 		participants,
 		hasDraw,
-		entryNoun
+		entryNoun,
+		bracket = null
 	}: {
-		event: EventRow;
 		participants: Participant[];
 		hasDraw: boolean;
 		entryNoun: string;
+		// Existing draw, if any — used to prefill round-1 pairs on edit.
+		bracket?: EventBracket | null;
 	} = $props();
-
-	// Pairing mode. Seed the initial choice once from the event's saved mode;
-	// after mount the user's clicks own `mode`. untrack keeps this a one-time
-	// default, not a reactive binding to the prop.
-	let mode = $state<PairingMode>(untrack(() => event.pairing_mode) ?? 'auto');
 
 	// --- Manual pairings model -------------------------------------------------
 	// Round 1 has (nextPowerOfTwo(n) / 2) matches; each match holds two slots,
@@ -41,15 +36,40 @@
 	}
 	const roundOneCount = $derived(participants.length < 2 ? 0 : nextPow2(participants.length) / 2);
 
-	// The editable grid. Rebuilt whenever the match count changes (e.g. a
-	// participant was added/removed on another tab), preserving nothing — the
-	// organizer starts from a clean slate, which is the safe default.
+	// Existing round-1 pairs keyed by match index, from the current draw. Only
+	// participant slots (not source labels) — round 1 always has real teams.
+	function existingRows(): MatchRow[] {
+		const r1 = bracket?.rounds?.[0]?.matches ?? [];
+		return r1.map((m) => ({
+			a: m.participants.find((p) => p.slot === 1)?.participant_id ?? null,
+			b: m.participants.find((p) => p.slot === 2)?.participant_id ?? null
+		}));
+	}
+
+	// The editable grid. Re-seeded whenever the source data changes: the match
+	// count (a participant was added/removed) OR the existing draw's round-1 pairs
+	// (a rebuild → invalidateAll brought fresh data). Keyed on a snapshot so an
+	// in-progress edit to `rows` doesn't retrigger a re-seed. Prefills from the
+	// existing draw when its round-1 size matches; otherwise blank.
+	const seedKey = $derived(
+		JSON.stringify({
+			n: roundOneCount,
+			r1: bracket?.rounds?.[0]?.matches?.map((m) => [
+				m.participants.find((p) => p.slot === 1)?.participant_id ?? null,
+				m.participants.find((p) => p.slot === 2)?.participant_id ?? null
+			]) ?? null
+		})
+	);
 	let rows = $state<MatchRow[]>([]);
-	let builtFor = $state(-1);
+	let builtFor = $state('');
 	$effect(() => {
-		if (roundOneCount !== builtFor) {
-			rows = Array.from({ length: roundOneCount }, () => ({ a: null, b: null }));
-			builtFor = roundOneCount;
+		if (seedKey !== builtFor) {
+			const prior = existingRows();
+			rows =
+				prior.length === roundOneCount && roundOneCount > 0
+					? prior
+					: Array.from({ length: roundOneCount }, () => ({ a: null, b: null }));
+			builtFor = seedKey;
 		}
 	});
 
@@ -79,18 +99,6 @@
 	const canSaveManual = $derived(halfFilled === 0 && filledRows > 0);
 
 	// --- Actions ---------------------------------------------------------------
-	// Auto-fill drops the remaining unassigned teams into empty slots, shuffled,
-	// so the organizer gets a complete draw they can then tweak.
-	function autoFill() {
-		const pool = [...unassigned].sort(() => Math.random() - 0.5);
-		const next = rows.map((r) => ({ ...r }));
-		for (const r of next) {
-			if (r.a === null && pool.length) r.a = pool.shift()!.id;
-			if (r.b === null && pool.length) r.b = pool.shift()!.id;
-		}
-		rows = next;
-	}
-
 	function clearPairings() {
 		rows = rows.map(() => ({ a: null, b: null }));
 	}
@@ -118,76 +126,14 @@
 </script>
 
 <div class="flex flex-col gap-5">
-	<!-- Pairing mode selector -->
-	<Card>
-		<div class="mb-3">
-			<h2 class="font-display text-[15px] uppercase tracking-[0.08em] text-primary">Pairing mode</h2>
-			<p class="text-xs text-muted">Choose how round 1 is decided, then build the bracket.</p>
-		</div>
-		<div class="grid gap-3 sm:grid-cols-2">
-			{#each [{ v: 'auto', t: 'Auto-generate', d: 'Random pairs from the entered ' + entryNoun + 's.' }, { v: 'manual', t: 'Manual pairings', d: 'You decide who plays who in round 1.' }] as opt (opt.v)}
-				<button
-					type="button"
-					onclick={() => (mode = opt.v as PairingMode)}
-					class="rounded-md border p-3 text-left transition-colors {mode === opt.v
-						? 'border-accent bg-accent/5'
-						: 'border-border hover:border-accent/50'}"
-				>
-					<div class="flex items-center gap-2">
-						<span
-							class="grid size-4 place-items-center rounded-full border {mode === opt.v
-								? 'border-accent'
-								: 'border-border'}"
-						>
-							{#if mode === opt.v}<span class="size-2 rounded-full bg-accent"></span>{/if}
-						</span>
-						<span class="text-[13px] font-bold text-primary">{opt.t}</span>
-					</div>
-					<p class="mt-1 pl-6 text-xs text-muted">{opt.d}</p>
-				</button>
-			{/each}
-		</div>
-	</Card>
-
 	{#if participants.length < 2}
 		<Card>
 			<p class="text-sm text-muted">
 				Add at least 2 {entryNoun}s in the Participants tab before building a bracket.
 			</p>
 		</Card>
-	{:else if mode === 'auto'}
-		<!-- Auto mode -->
-		<Card>
-			<h3 class="font-display text-[13px] uppercase tracking-[0.08em] text-primary">
-				Auto-generate bracket
-			</h3>
-			<p class="mt-1 text-[13px] text-muted">
-				We'll pair the {participants.length} entered {entryNoun}s at random into a single-elimination
-				draw. Unfilled slots become byes. {hasDraw ? 'This replaces the current draw.' : ''}
-			</p>
-			<form
-				method="POST"
-				action="?/build"
-				use:enhance={toastEnhance({
-					success: 'Bracket built',
-					error: 'Could not build the bracket.',
-					before: () => {
-						submitting = true;
-					},
-					settle: () => {
-						submitting = false;
-					}
-				})}
-				class="mt-4"
-			>
-				<input type="hidden" name="pairing_mode" value="auto" />
-				<Button type="submit" disabled={submitting}>
-					{submitting ? 'Building…' : hasDraw ? 'Regenerate bracket' : 'Generate bracket'}
-				</Button>
-			</form>
-		</Card>
 	{:else}
-		<!-- Manual mode: unassigned list + round-1 editor -->
+		<!-- Manual round-1 pairings: unassigned list + round-1 editor -->
 		<div class="grid gap-5 lg:grid-cols-[18rem_1fr]">
 			<!-- Unassigned teams -->
 			<Card padded={false} class="h-max">
@@ -239,14 +185,9 @@
 						</h3>
 						<p class="text-xs text-muted">Assign both sides, or leave a match empty to skip it.</p>
 					</div>
-					<div class="flex gap-2">
-						<Button variant="subtle" size="sm" onclick={autoFill} disabled={unassigned.length === 0}>
-							<Shuffle class="size-3.5" /> Auto-fill remaining
-						</Button>
-						<Button variant="ghost" size="sm" onclick={clearPairings} disabled={assigned.size === 0}>
-							<Eraser class="size-3.5" /> Clear
-						</Button>
-					</div>
+					<Button variant="ghost" size="sm" onclick={clearPairings} disabled={assigned.size === 0}>
+						<Eraser class="size-3.5" /> Clear
+					</Button>
 				</div>
 
 				<div class="flex flex-col gap-2">
@@ -332,7 +273,6 @@
 						}
 					})}
 				>
-					<input type="hidden" name="pairing_mode" value="manual" />
 					<input type="hidden" name="matches" value={manualPayload} />
 				</form>
 			</div>

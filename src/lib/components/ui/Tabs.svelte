@@ -21,7 +21,7 @@
 		{#each items as item (item.value)}
 			<Tabs.Trigger
 				value={item.value}
-				class="-mb-px border-b-2 border-transparent px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted transition-colors data-[state=active]:border-accent data-[state=active]:text-primary hover:text-primary"
+				class="-mb-px cursor-pointer border-b-2 border-transparent px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted transition-colors data-[state=active]:border-accent data-[state=active]:text-primary hover:text-primary"
 			>
 				{item.label}
 			</Tabs.Trigger>

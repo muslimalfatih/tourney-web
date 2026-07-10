@@ -23,6 +23,7 @@ export interface Tournament {
 	name: string;
 	slug: string;
 	sport: string;
+	description?: string | null;
 	status: TournamentStatus;
 	location?: string | null;
 	starts_on?: string | null;
@@ -33,12 +34,24 @@ export interface Tournament {
 
 export type EventFormat = 'single_elim' | 'round_robin' | 'group_knockout';
 export type EventDiscipline = 'singles' | 'doubles';
+export type EventGender = 'men' | 'women' | 'mixed';
 
 export interface EventDivision {
 	id: string;
 	name: string;
 	discipline: EventDiscipline;
 	format: EventFormat;
+	// Public-facing config (backend migration 00003). Present on all event reads.
+	category?: string | null;
+	gender: EventGender;
+	// Organizer reads carry is_public; the public payload omits it (its events are
+	// implicitly public), so it's optional.
+	is_public?: boolean;
+	public_display_name?: string | null;
+	public_order: number;
+	// Derived server-side from format (single source of truth).
+	has_group_stage: boolean;
+	has_knockout_stage: boolean;
 }
 
 export interface PublicTournament extends Tournament {

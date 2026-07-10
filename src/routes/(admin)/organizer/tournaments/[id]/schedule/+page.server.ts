@@ -8,6 +8,7 @@ import {
 	listSchedule,
 	createCourt,
 	createSlot,
+	updateSlot,
 	deleteSlot
 } from '$lib/api/endpoints/schedule';
 import { ApiError } from '$lib/api/client';
@@ -85,6 +86,36 @@ export const actions: Actions = {
 			return fail(
 				e instanceof ApiError ? e.status : 500,
 				{ error: e instanceof ApiError ? e.message : 'Could not schedule.' }
+			);
+		}
+	},
+
+	editSlot: async ({ request, locals, fetch }) => {
+		const form = await request.formData();
+		const id = String(form.get('slotId') ?? '');
+		const court_id = String(form.get('court_id') ?? '');
+		const match_id = String(form.get('match_id') ?? '') || null;
+		const startsRaw = String(form.get('starts_at') ?? '');
+		if (!id || !court_id || !startsRaw) {
+			return fail(400, { error: 'Court and start time are required.' });
+		}
+		const startDate = new Date(startsRaw);
+		if (Number.isNaN(startDate.getTime())) {
+			return fail(400, { error: 'Invalid start time.' });
+		}
+		const starts_at = startDate.toISOString();
+		const ends_at = new Date(startDate.getTime() + 90 * 60_000).toISOString();
+		try {
+			await updateSlot(
+				id,
+				{ court_id, match_id, starts_at, ends_at },
+				{ fetch, token: locals.session.accessToken }
+			);
+			return { slotUpdated: true };
+		} catch (e) {
+			return fail(
+				e instanceof ApiError ? e.status : 500,
+				{ error: e instanceof ApiError ? e.message : 'Could not update the slot.' }
 			);
 		}
 	},
