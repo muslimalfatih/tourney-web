@@ -117,16 +117,24 @@ h3,
 		opacity: 0;
 	}
 }
+/* Scale only. The modal is centred via Tailwind's `translate: -50% -50%`
+ * (the CSS `translate` longhand, a separate property from `transform`). Putting
+ * translate in this `transform` keyframe stacked a SECOND -50%,-50% on the from
+ * frame, so the modal started double-offset (top-left) and flew to centre.
+ * Animating scale alone leaves centring to the `translate` property. */
 @keyframes content-pop-in {
 	from {
 		opacity: 0;
-		transform: translate(-50%, -50%) scale(0.96);
+		transform: scale(0.96);
 	}
 }
+/* Opacity-only: the menu/select/date popovers are positioned by Floating UI,
+ * which owns `transform: translate(...)` on this same node. Animating transform
+ * here (scale) clobbers that translate on the from-frame, so the popover starts
+ * un-positioned (top-left) and flies to place. Fading avoids the fight. */
 @keyframes menu-pop-in {
 	from {
 		opacity: 0;
-		transform: scale(0.96);
 	}
 }
 
@@ -138,8 +146,51 @@ h3,
 	animation: content-pop-in 200ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 .motion-menu[data-state='open'] {
-	transform-origin: var(--bits-floating-transform-origin, center);
-	animation: menu-pop-in 160ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+	animation: menu-pop-in 140ms ease-out;
+}
+
+/* Global navigation progress bar. A slim accent stripe that slides across the
+ * top edge while a route loads (indeterminate — we don't know how long the SSR
+ * load takes). Fixed + high z so it sits above all chrome. */
+.nav-progress {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 100;
+	height: 2px;
+	background: var(--color-accent);
+	transform-origin: left;
+	animation: nav-progress-slide 1.2s ease-in-out infinite;
+}
+@keyframes nav-progress-slide {
+	0% {
+		transform: scaleX(0);
+		opacity: 1;
+	}
+	50% {
+		transform: scaleX(0.6);
+	}
+	100% {
+		transform: scaleX(1);
+		opacity: 0.4;
+	}
+}
+/* Reduced motion: a static bar that gently pulses opacity, no travel. */
+@media (prefers-reduced-motion: reduce) {
+	.nav-progress {
+		animation: nav-progress-pulse 1s ease-in-out infinite;
+		transform: none;
+	}
+	@keyframes nav-progress-pulse {
+		0%,
+		100% {
+			opacity: 0.4;
+		}
+		50% {
+			opacity: 1;
+		}
+	}
 }
 
 /* Reduced motion: gentle cross-fade, no scale/overshoot (Apple §14). */

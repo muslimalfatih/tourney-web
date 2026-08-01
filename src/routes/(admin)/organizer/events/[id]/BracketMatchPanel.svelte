@@ -44,9 +44,11 @@
 
 	// Re-seed the local form when a different match opens OR when the same match's
 	// persisted data changes (after a save → invalidateAll brings fresh sets/
-	// status). Keyed on a snapshot so mid-edit typing doesn't retrigger a re-seed.
+	// status/court/time). Keyed on a snapshot so mid-edit typing doesn't retrigger.
 	const seedKey = $derived(
-		match ? `${match.id}:${match.status}:${JSON.stringify(match.sets ?? [])}` : ''
+		match
+			? `${match.id}:${match.status}:${match.court_id}:${match.scheduled_at}:${JSON.stringify(match.sets ?? [])}`
+			: ''
 	);
 	let seededFor = $state('');
 	$effect(() => {
@@ -55,8 +57,10 @@
 				match.sets?.length > 0
 					? match.sets.map((s) => ({ p1: String(s.p1), p2: String(s.p2) }))
 					: [{ p1: '', p2: '' }];
-			court = '';
-			startsAt = '';
+			// Seed court + start from the persisted match so the panel shows what's
+			// already scheduled instead of blank.
+			court = match.court_id ?? '';
+			startsAt = match.scheduled_at ?? '';
 			seededFor = seedKey;
 		}
 	});
@@ -130,9 +134,9 @@
 				</div>
 			</form>
 
-			<!-- Score. Completing advances the winner (single_elim logic). The panel
-			     stays open after saving so the organizer can verify the result and
-			     correct it if the score was wrong (re-completing re-advances). -->
+			<!-- Score. Completing advances the winner (single_elim logic). On success
+			     the panel closes — the organizer sees the updated bracket behind it;
+			     re-clicking the match reopens to correct a wrong score. -->
 			{#if playable}
 				<form
 					method="POST"
@@ -142,6 +146,9 @@
 						error: 'Could not save the score.',
 						before: () => {
 							submitting = true;
+						},
+						onSuccess: () => {
+							open = false;
 						},
 						settle: () => {
 							submitting = false;

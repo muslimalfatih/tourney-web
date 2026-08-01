@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { EventBracket } from '$lib/api/endpoints/events';
+	import { fly } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import BurgundyMatchNode from './BurgundyMatchNode.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
 
@@ -117,7 +119,10 @@
 			style="transform: scale({zoom}); width: {100 / zoom}%"
 		>
 			{#each bracket.rounds as round, r (round.round_number)}
-				<div class="flex min-w-[13rem] flex-col">
+				<div
+					in:fly={{ y: 8, duration: 200, delay: Math.min(r * 60, 300), easing: cubicOut }}
+					class="flex min-w-[13rem] flex-col"
+				>
 					<div class="mb-3 px-1">
 						<h3 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">{round.name}</h3>
 						<p class="text-[11px] text-muted">

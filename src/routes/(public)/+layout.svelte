@@ -22,7 +22,7 @@
 
 	<footer class="border-t border-border/60 py-6">
 		<div class="mx-auto max-w-6xl px-4 text-xs text-muted">
-			Powered by Laga — white-label tournament platform.
+			Powered by Laga
 		</div>
 	</footer>
 </div>

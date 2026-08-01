@@ -27,15 +27,26 @@
 
 	const catOf = (e: EventDivision) => e.category?.trim() ?? '';
 
-	// Distinct REAL categories in first-seen order (events arrive pre-sorted by
-	// public_order). Uncategorised events have no chip. Show the category row only
-	// when there's more than one to choose between.
-	const categories = $derived([...new Set(events.map(catOf).filter((c) => c !== ''))]);
+	// Skill categories sort by ability, not first-seen: newbie → beginner →
+	// intermediate → advanced → open. Anything unrecognised sorts after, alpha.
+	const CATEGORY_ORDER = ['newbie', 'beginner', 'intermediate', 'advanced', 'open'];
+	const catRank = (c: string) => {
+		const i = CATEGORY_ORDER.indexOf(c.toLowerCase());
+		return i === -1 ? CATEGORY_ORDER.length : i;
+	};
+
+	// Distinct REAL categories, ability-sorted. Uncategorised events have no chip.
+	// Show the category row only when there's more than one to choose between.
+	const categories = $derived(
+		[...new Set(events.map(catOf).filter((c) => c !== ''))].sort(
+			(a, b) => catRank(a) - catRank(b) || a.localeCompare(b)
+		)
+	);
 	const showCategories = $derived(categories.length > 1);
 
 	// Gender pills are ALWAYS shown; each is disabled when the selected category
-	// has no event of that gender (visible-but-inert rather than hidden). "All"
-	// resets the filter and is always enabled.
+	// has no event of that gender (visible-but-inert rather than hidden). No "All"
+	// option — an unset gender simply lights no pill and shows every gender.
 	const allGenders: { value: EventGender; label: string }[] = [
 		{ value: 'men', label: 'Men' },
 		{ value: 'women', label: 'Women' },
@@ -44,10 +55,9 @@
 	const gendersInCat = $derived(
 		new Set(events.filter((e) => category == null || catOf(e) === category).map((e) => e.gender))
 	);
-	const genderOptions = $derived([
-		{ value: null as EventGender | null, label: 'All' },
-		...allGenders.map((g) => ({ ...g, disabled: !gendersInCat.has(g.value) }))
-	]);
+	const genderOptions = $derived(
+		allGenders.map((g) => ({ ...g, disabled: !gendersInCat.has(g.value) }))
+	);
 </script>
 
 {#snippet bar()}

@@ -7,6 +7,8 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { tick } from 'svelte';
+	import { fly } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Tag from '$lib/components/ui/Tag.svelte';
@@ -79,6 +81,27 @@
 	let deleteId = $state('');
 	let nameInput = $state<HTMLInputElement | null>(null);
 	let addName = $state('');
+
+	// Optimistic add: names submitted but not yet confirmed by the server. They
+	// render immediately (as pending rows) so adding a roster feels instant, then
+	// get cleared once invalidateAll brings the real rows back (success) or the
+	// action fails. Keyed by a temp id so Svelte doesn't collide them with real ids.
+	let pending = $state<{ tempId: string; display_name: string }[]>([]);
+	let pendingSeq = 0;
+	// Real rows first, then any still-pending optimistic rows. Pending rows carry
+	// the full Participant shape (nulls) so row helpers stay type-clean.
+	const rows = $derived<(Participant & { pending: boolean })[]>([
+		...data.participants.map((p) => ({ ...p, pending: false })),
+		...pending.map((p) => ({
+			id: p.tempId,
+			event_id: data.event.id,
+			player_id: null,
+			team_id: null,
+			display_name: p.display_name,
+			seed: null,
+			pending: true
+		}))
+	]);
 
 	function del(id: string) {
 		deleteId = id;
@@ -302,7 +325,7 @@
 				<div>
 					<h2 class="font-display text-[15px] uppercase tracking-[0.08em] text-primary">Participants</h2>
 					<p class="text-xs text-muted">
-						{data.participants.length} {entryNoun}{data.participants.length === 1 ? '' : 's'}
+						{rows.length} {entryNoun}{rows.length === 1 ? '' : 's'}
 					</p>
 				</div>
 			</div>
@@ -316,14 +339,18 @@
 					error: 'Could not add',
 					before: () => {
 						submitting = true;
+						// Show the new row instantly; reconciled in settle.
+						const name = addName.trim();
+						if (name) pending = [...pending, { tempId: `tmp-${pendingSeq++}`, display_name: name }];
+						addName = ''; // clear now so the next name can be typed immediately
+						nameInput?.focus();
 					},
 					settle: () => {
 						submitting = false;
-					},
-					onSuccess: async () => {
-						addName = '';
-						await tick();
-						nameInput?.focus();
+						// Real data is loaded (success) or the add failed — drop the
+						// optimistic rows either way. On success the real row replaces it;
+						// on failure it simply disappears and the error toast shows.
+						pending = [];
 					}
 				})}
 				class="flex flex-wrap items-end gap-2 border-b border-border bg-subtle/50 px-5 py-3"
@@ -348,7 +375,7 @@
 				</Button>
 			</form>
 
-			{#if data.participants.length === 0}
+			{#if rows.length === 0}
 				<div class="px-5 py-8">
 					<p class="text-center text-sm text-muted">
 						No {entryNoun}s yet — add your first above, then build the draw.
@@ -367,9 +394,18 @@
 							</tr>
 						</thead>
 						<tbody>
-							{#each data.participants as p (p.id)}
-								<tr class="border-b border-border transition-colors hover:bg-subtle">
-									{#if editId === p.id}
+							{#each rows as p (p.id)}
+								<tr
+									in:fly={{ y: -6, duration: 150, easing: cubicOut }}
+									class="border-b border-border transition-colors hover:bg-subtle {p.pending
+										? 'opacity-50'
+										: ''}"
+								>
+									{#if p.pending}
+										<!-- Optimistic row: name shown instantly, no actions until confirmed. -->
+										<td class="px-5 py-3 font-bold text-primary">{p.display_name}</td>
+										<td class="px-5 py-3 text-right text-[11px] text-muted">Adding…</td>
+									{:else if editId === p.id}
 										<!-- Inline edit: the row's name becomes an input, committed via a
 										     form so it goes through use:enhance + invalidate. -->
 										<td class="px-5 py-2" colspan="2">

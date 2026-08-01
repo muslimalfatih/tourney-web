@@ -2,6 +2,8 @@
 	import type { Tournament } from '$lib/api/types';
 	import type { EventRow } from '$lib/api/endpoints/events';
 	import { enhance } from '$app/forms';
+	import { scale } from 'svelte/transition';
+	import { backOut } from 'svelte/easing';
 	import { toastEnhance } from '$lib/utils/toast';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -265,9 +267,13 @@
 	class="flex flex-wrap items-center gap-4 rounded-md border border-border bg-subtle p-4"
 >
 	<div class="grow">
-		<Tag tone={data.tournament.status === 'published' ? 'published' : 'draft'}
-			>{data.tournament.status}</Tag
-		>
+		{#key data.tournament.status}
+			<span in:scale={{ start: 0.92, duration: 200, easing: backOut }} class="inline-block">
+				<Tag tone={data.tournament.status === 'published' ? 'published' : 'draft'}
+					>{data.tournament.status}</Tag
+				>
+			</span>
+		{/key}
 		<p class="mt-1.5 text-[13px] text-muted">
 			Publishing makes the public bracket, schedule and participant pages live.
 		</p>

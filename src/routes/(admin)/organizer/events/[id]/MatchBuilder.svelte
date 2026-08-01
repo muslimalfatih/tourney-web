@@ -2,6 +2,8 @@
 	import type { Participant } from '$lib/api/endpoints/participants';
 	import type { EventBracket } from '$lib/api/endpoints/events';
 	import { enhance } from '$app/forms';
+	import { slide } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import { toastEnhance } from '$lib/utils/toast';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -225,6 +227,7 @@
 				<div class="flex flex-col gap-2">
 					{#if halfFilled > 0}
 						<p
+							transition:slide={{ duration: 160, easing: cubicOut }}
 							class="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-[13px] text-danger"
 						>
 							{halfFilled} match{halfFilled === 1 ? ' has' : 'es have'} only one side filled. Complete
@@ -233,6 +236,7 @@
 					{/if}
 					{#if unassigned.length > 0 && halfFilled === 0}
 						<p
+							transition:slide={{ duration: 160, easing: cubicOut }}
 							class="rounded-md border border-gold/40 bg-gold/10 px-3 py-2 text-[13px] text-primary"
 						>
 							{unassigned.length} {entryNoun}{unassigned.length === 1 ? '' : 's'} still unassigned —

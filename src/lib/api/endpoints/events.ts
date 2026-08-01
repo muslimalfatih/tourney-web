@@ -123,6 +123,9 @@ export interface BracketMatch {
 	match_no: number;
 	status: string;
 	winner_participant_id: string | null;
+	court_id: string | null;
+	court_name: string | null;
+	scheduled_at: string | null;
 	participants: BracketSlot[];
 	sets: BracketSet[];
 }
