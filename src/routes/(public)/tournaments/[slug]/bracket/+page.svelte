@@ -10,9 +10,10 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import TournamentFilterStrip from '$lib/components/public/TournamentFilterStrip.svelte';
-	import BurgundyBracket from '$lib/components/bracket/BurgundyBracket.svelte';
+	import PagedKnockoutBracket from '$lib/components/bracket/PagedKnockoutBracket.svelte';
+	import MatchDetailModal from '$lib/components/bracket/MatchDetailModal.svelte';
+	import { adaptBracketRounds } from '$lib/utils/bracket-adapter';
 	import Standings from '$lib/components/bracket/Standings.svelte';
-	import GrandFinalCard from '$lib/components/bracket/GrandFinalCard.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
 	import { LiveConnection } from '$lib/stores/live.svelte';
 
@@ -113,22 +114,38 @@
 		else getEventBracket(eventId).then((b) => (liveBracket = b)).catch(() => {});
 	});
 
-	const matchHref = (id: string) => `/tournaments/${data.tournament.slug}/matches/${id}`;
-
-	// Knockout bracket + final match.
+	// Knockout bracket + final match. Both single_elim's bracket.rounds and
+	// group_knockout's groupKnockout.knockout are already real elimination
+	// trees (unlike round_robin's flat fixture list, which never reaches this
+	// code — that format branches to <Standings> instead, above) — adaptable
+	// directly, no synthetic EventBracket wrapper needed.
 	const knockoutRounds = $derived(
 		data.format === 'group_knockout' ? (groupKnockout?.knockout ?? []) : (bracket?.rounds ?? [])
 	);
-	const knockoutBracket = $derived<EventBracket>({
-		event_id: data.eventId ?? '',
-		format: 'single_elim',
-		rounds: knockoutRounds
-	});
-	const finalMatch = $derived(() => {
-		const last = knockoutRounds[knockoutRounds.length - 1];
-		return last?.matches.length === 1 ? last.matches[0] : null;
-	});
+	const adaptedKnockoutRounds = $derived(adaptBracketRounds(knockoutRounds));
 	const hasKnockout = $derived(knockoutRounds.some((r) => r.matches.length > 0));
+
+	// Clicking a match opens it in a popup instead of navigating to
+	// /matches/[matchId] — that route stays reachable for direct/shared links,
+	// it's just no longer how the bracket itself surfaces match detail. The
+	// bracket's own BracketMatch (already in memory) carries court + round info
+	// that the public match-detail endpoint doesn't return — passed into the
+	// modal alongside the id so that shows immediately instead of waiting on
+	// fields that would never arrive from the fetch.
+	const knockoutMatchById = $derived(
+		new Map(
+			knockoutRounds.flatMap((r) => r.matches.map((m) => [m.id, { match: m, roundName: r.name }] as const))
+		)
+	);
+	let detailOpen = $state(false);
+	let detailMatchId = $state<string | null>(null);
+	const detailBracketInfo = $derived(
+		detailMatchId ? (knockoutMatchById.get(detailMatchId) ?? null) : null
+	);
+	function openMatchDetail(id: string) {
+		detailMatchId = id;
+		detailOpen = true;
+	}
 </script>
 
 <!-- ============ HERO (centered, no header band) ============ -->
@@ -196,10 +213,30 @@
 		<EmptyState title="Group stage not ready" message="Standings appear once the draw is generated." />
 	{/if}
 {:else if hasKnockout}
-	{#if finalMatch()}
-		<div class="mb-8"><GrandFinalCard finalMatch={finalMatch()} /></div>
-	{/if}
-	<BurgundyBracket bracket={knockoutBracket} {matchHref} />
+	<!-- PagedKnockoutBracket ships dark fallback colors (built alongside the
+	     /bracket-demo prototype, which stays dark on purpose) — every color it
+	     uses reads through a --bk-* custom property first, so this wrapper
+	     re-themes it to Laga Burgundy for this page only, without touching the
+	     shared component files or the demo. Sizing vars (--bk-card-w etc.) are
+	     left alone; those come from the component's own responsive JS. -->
+	<div
+		style:--bk-bg="var(--color-page)"
+		style:--bk-text="var(--color-primary)"
+		style:--bk-muted="var(--color-muted)"
+		style:--bk-accent="var(--color-accent)"
+		style:--bk-winner="var(--color-accent)"
+		style:--bk-gold="var(--color-gold)"
+		style:--bk-header="var(--color-muted)"
+		style:--bk-card-bg="var(--color-surface)"
+		style:--bk-card-border="var(--color-border)"
+		style:--bk-meta-bg="var(--color-subtle)"
+		style:--bk-connector="var(--color-border)"
+		style:--bk-nav-hover="var(--color-subtle)"
+	>
+		<PagedKnockoutBracket rounds={adaptedKnockoutRounds} onMatchClick={openMatchDetail} />
+	</div>
 {:else}
 	<EmptyState title="Draw not published yet" message="The bracket appears once the organizer generates the draw." />
 {/if}
+
+<MatchDetailModal bind:open={detailOpen} matchId={detailMatchId} bracketInfo={detailBracketInfo} />

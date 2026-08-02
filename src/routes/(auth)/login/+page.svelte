@@ -3,7 +3,7 @@
 	import { toastEnhance } from '$lib/utils/toast';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
-	import { Trophy } from '@lucide/svelte';
+	import BrandIcon from '$lib/components/ui/BrandIcon.svelte';
 
 	let { form }: { form?: { email?: string; error?: string } } = $props();
 	let submitting = $state(false);
@@ -12,8 +12,8 @@
 <div class="flex min-h-screen items-center justify-center bg-bg px-4">
 	<div class="w-full max-w-sm">
 		<div class="mb-6 flex items-center justify-center gap-2 font-semibold text-primary">
-			<Trophy class="size-6 text-accent" />
-			<span class="text-lg">Laga</span>
+			<BrandIcon class="size-6 text-accent" />
+			<span class="text-lg">tourney.social</span>
 		</div>
 
 		<Card>

@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { cn } from '$lib/utils/cn';
 	import { Trophy, LayoutDashboard, Users, LogOut, ScrollText } from '@lucide/svelte';
+	import BrandIcon from '$lib/components/ui/BrandIcon.svelte';
 
 	let { data, children }: { data: { user: User }; children: Snippet } = $props();
 
@@ -35,8 +36,8 @@
 		<div
 			class="flex items-center gap-2 px-5 py-4 font-display text-[15px] font-bold uppercase tracking-[0.14em] text-accent"
 		>
-			<Trophy class="size-5" />
-			Laga
+			<BrandIcon class="size-5" />
+			tourney.social
 		</div>
 		<nav class="space-y-1 px-3">
 			{#each nav as item (item.label)}

@@ -18,6 +18,8 @@
 	import RowMenu from '$lib/components/ui/RowMenu.svelte';
 	import RowMenuItem from '$lib/components/ui/RowMenuItem.svelte';
 	import BurgundyBracket from '$lib/components/bracket/BurgundyBracket.svelte';
+	import PagedKnockoutBracket from '$lib/components/bracket/PagedKnockoutBracket.svelte';
+	import { adaptEventBracket } from '$lib/utils/bracket-adapter';
 	import MatchBuilder from './MatchBuilder.svelte';
 	import RoundRobinBuilder from './RoundRobinBuilder.svelte';
 	import GroupBuilder from './GroupBuilder.svelte';
@@ -49,6 +51,14 @@
 
 	const entryNoun = $derived(data.event.discipline === 'doubles' ? 'team' : 'player');
 	const hasDraw = $derived(data.event.match_count > 0);
+
+	// PagedKnockoutBracket only replaces the old renderer for single_elim — it's
+	// the only format whose bracket.rounds is genuinely a halving elimination
+	// tree (round_robin's is a flat fixture list, per RoundRobinBuilder's own
+	// flatMap over it). round_robin/group_knockout keep BurgundyBracket here,
+	// unchanged from before.
+	const isSingleElim = $derived(data.event.format === 'single_elim');
+	const bracketRounds = $derived(isSingleElim ? adaptEventBracket(data.bracket) : []);
 
 	// Fixed category set (skill levels), matching the tournament page's create flow.
 	// An existing off-list value is preserved as an extra option so saving Public
@@ -310,7 +320,11 @@
 		<!-- BRACKET (read-heavy; click a node to edit schedule/score) -->
 		{#if hasDraw}
 			<p class="mb-3 text-xs text-muted">Click a match to set its court, time, or score.</p>
+			{#if isSingleElim}
+			<PagedKnockoutBracket rounds={bracketRounds} onMatchClick={openMatch} />
+		{:else}
 			<BurgundyBracket bracket={data.bracket} onMatchClick={openMatch} />
+		{/if}
 		{:else}
 			<Card>
 				<p class="text-sm text-muted">

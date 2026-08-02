@@ -1,16 +1,14 @@
 <script lang="ts">
-	import type { GroupKnockout, EventBracket } from '$lib/api/endpoints/events';
+	import type { GroupKnockout } from '$lib/api/endpoints/events';
 	import Standings from './Standings.svelte';
-	import BurgundyBracket from './BurgundyBracket.svelte';
+	import PagedKnockoutBracket from './PagedKnockoutBracket.svelte';
+	import { adaptBracketRounds } from '$lib/utils/bracket-adapter';
 
 	let { data, matchHref }: { data: GroupKnockout; matchHref?: (id: string) => string } = $props();
 
-	// Reuse the bracket renderer for the knockout rounds.
-	const knockoutBracket = $derived<EventBracket>({
-		event_id: data.event_id,
-		format: 'single_elim',
-		rounds: data.knockout
-	});
+	// data.knockout is already a real elimination tree (same shape used on the
+	// public bracket page's knockout view) — adapt it directly.
+	const adaptedKnockoutRounds = $derived(adaptBracketRounds(data.knockout));
 	const hasKnockout = $derived(data.knockout.some((r) => r.matches.length > 0));
 </script>
 
@@ -32,7 +30,7 @@
 	{#if hasKnockout}
 		<section>
 			<h3 class="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-accent">Knockout</h3>
-			<BurgundyBracket bracket={knockoutBracket} {matchHref} />
+			<PagedKnockoutBracket rounds={adaptedKnockoutRounds} {matchHref} />
 		</section>
 	{/if}
 </div>
