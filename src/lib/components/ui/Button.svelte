@@ -14,10 +14,21 @@
 		...rest
 	}: HTMLButtonAttributes & { variant?: Variant; size?: Size; children: Snippet } = $props();
 
-	// Burgundy button system — pill radius, uppercase tracked labels.
+	// Pill radius, uppercase tracked labels.
+	//
+	// ACCENT BUDGET — the rule the whole UI follows:
+	//   filled accent = the ONE primary action in a region (and "you are here" nav)
+	//   accent tint   = semantic status (Tag, Badge)
+	//   neutral       = selections and secondary actions; accent only on hover
+	//
+	// `ghost` used to carry border-accent, which put a blue outline on every
+	// secondary button on the page — seven of them on the tournament screen
+	// alone, none of them primary. When every control is accent, none reads as
+	// the primary one. It rests on the neutral border and picks up accent on
+	// hover, so the affordance survives without the shouting.
 	const variants: Record<Variant, string> = {
 		primary: 'bg-accent text-on-accent hover:bg-accent-hover shadow-(--shadow-subtle)',
-		ghost: 'bg-transparent text-primary border border-accent hover:bg-subtle',
+		ghost: 'bg-transparent text-primary border border-border hover:border-accent hover:bg-subtle',
 		subtle: 'bg-surface text-primary border border-border hover:bg-subtle',
 		danger: 'bg-danger text-on-accent hover:opacity-90'
 	};

@@ -34,7 +34,14 @@
 		</h1>
 
 		{#if activeLabel}
-			<p class="mt-3 font-display text-2xl uppercase tracking-tight text-accent sm:text-3xl">
+			<!-- Same division-label treatment as the bracket hero, so the line
+			     doesn't change face between tabs. No indent compensation here:
+			     this header is left-aligned, and the trailing letter-space only
+			     throws off centred text — adding it would break the flush edge
+			     this column aligns to. -->
+			<p
+				class="mt-4 font-body text-[clamp(1.125rem,2.6vw,1.75rem)] font-bold uppercase leading-tight tracking-[0.2em] text-accent"
+			>
 				{activeLabel}
 			</p>
 		{/if}

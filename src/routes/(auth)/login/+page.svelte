@@ -9,7 +9,7 @@
 	let submitting = $state(false);
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-bg px-4">
+<div class="flex min-h-screen items-center justify-center bg-page px-4">
 	<div class="w-full max-w-sm">
 		<div class="mb-6 flex items-center justify-center gap-2 font-semibold text-primary">
 			<BrandIcon class="size-6 text-accent" />

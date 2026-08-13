@@ -34,11 +34,16 @@
 	role="group"
 >
 	<!-- The single sliding pill. Rendered only when an option is active. Width is
-	     one slot; it moves by whole slots via translateX. -->
+	     one slot; it moves by whole slots via translateX.
+	     Raised neutral surface, not accent: choosing a filter is a selection,
+	     not a call to action, and a filled accent pill made the DEFAULT "All"
+	     state the loudest thing on screen — emphasis on the absence of a
+	     filter. The muted -> primary text jump is the real selection cue; the
+	     surface only supports it. -->
 	{#if activeIndex >= 0}
 		<span
 			aria-hidden="true"
-			class="pointer-events-none absolute inset-y-1 left-1 rounded-pill bg-accent shadow-(--shadow-subtle) transition-transform duration-200 ease-out motion-reduce:transition-none"
+			class="pointer-events-none absolute inset-y-1 left-1 rounded-pill bg-subtle shadow-(--shadow-subtle) transition-transform duration-200 ease-out motion-reduce:transition-none"
 			style="width: calc((100% - 0.5rem) / {count}); transform: translateX({activeIndex * 100}%);"
 		></span>
 	{/if}
@@ -52,7 +57,7 @@
 			class={cn(
 				'relative z-10 cursor-pointer rounded-pill font-bold uppercase tracking-[0.08em] leading-none transition-colors duration-150 active:scale-[0.97] motion-reduce:active:scale-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100',
 				pad,
-				value === opt.value ? 'text-on-accent' : 'text-muted enabled:hover:text-primary'
+				value === opt.value ? 'text-primary' : 'text-muted enabled:hover:text-primary'
 			)}>{opt.label}</button
 		>
 	{/each}

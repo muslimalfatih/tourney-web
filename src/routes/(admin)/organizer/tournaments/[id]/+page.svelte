@@ -242,21 +242,21 @@
 
 <!-- Quick links to the other management surfaces -->
 <div class="mb-6 grid gap-3 sm:grid-cols-3">
-	<a href="/organizer/tournaments/{data.tournament.id}/participants">
-		<Card class="flex items-center gap-3 transition-colors hover:border-accent/50">
-			<Users class="size-5 text-accent" />
+	<a href="/organizer/tournaments/{data.tournament.id}/participants" class="group">
+		<Card class="flex items-center gap-3 transition-colors group-hover:border-accent/50">
+			<Users class="size-5 text-muted transition-colors group-hover:text-accent" />
 			<span class="font-bold text-primary">Participants &amp; teams</span>
 		</Card>
 	</a>
-	<a href="/organizer/tournaments/{data.tournament.id}/schedule">
-		<Card class="flex items-center gap-3 transition-colors hover:border-accent/50">
-			<Calendar class="size-5 text-accent" />
+	<a href="/organizer/tournaments/{data.tournament.id}/schedule" class="group">
+		<Card class="flex items-center gap-3 transition-colors group-hover:border-accent/50">
+			<Calendar class="size-5 text-muted transition-colors group-hover:text-accent" />
 			<span class="font-bold text-primary">Schedule</span>
 		</Card>
 	</a>
-	<a href="/organizer/tournaments/{data.tournament.id}/matches">
-		<Card class="flex items-center gap-3 transition-colors hover:border-accent/50">
-			<GitBranch class="size-5 text-accent" />
+	<a href="/organizer/tournaments/{data.tournament.id}/matches" class="group">
+		<Card class="flex items-center gap-3 transition-colors group-hover:border-accent/50">
+			<GitBranch class="size-5 text-muted transition-colors group-hover:text-accent" />
 			<span class="font-bold text-primary">Matches</span>
 		</Card>
 	</a>

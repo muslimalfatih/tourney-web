@@ -23,7 +23,9 @@
 
 <Dialog.Root bind:open>
 	<Dialog.Portal>
-		<Dialog.Overlay class="motion-overlay fixed inset-0 z-50 bg-primary/40 backdrop-blur-[2px]" />
+		<!-- Not bg-primary/40 — --color-primary is the light TEXT ink on this dark
+		     theme, so it scrimmed the page white. A scrim is always black. -->
+		<Dialog.Overlay class="motion-overlay fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px]" />
 		<Dialog.Content
 			class="motion-modal fixed left-1/2 top-1/2 z-50 w-[min(92vw,32rem)] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-surface p-6 shadow-(--shadow-soft) focus-visible:outline-none"
 		>

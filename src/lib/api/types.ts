@@ -39,6 +39,9 @@ export type EventGender = 'men' | 'women' | 'mixed';
 export interface EventDivision {
 	id: string;
 	name: string;
+	/** URL identifier, unique within the tournament (backend migration 00005).
+	 *  Assigned once at create and never recomputed, so links survive renames. */
+	slug: string;
 	discipline: EventDiscipline;
 	format: EventFormat;
 	// Public-facing config (backend migration 00003). Present on all event reads.

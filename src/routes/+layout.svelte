@@ -3,9 +3,29 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { Toaster } from 'svelte-sonner';
 	import { navigating } from '$app/state';
+	import { onNavigate } from '$app/navigation';
 	import { Check, TriangleAlert, Info } from '@lucide/svelte';
 
 	let { children } = $props();
+
+	// Wraps every client-side navigation's DOM update in a View Transition, so
+	// any element carrying a `view-transition-name` (layout.css: .vt-label,
+	// .vt-content on the public tournament view) cross-fades old -> new instead
+	// of hard-swapping. Elements with no name are unaffected — this does not
+	// become a whole-page transition.
+	// SvelteKit's documented recipe (kit.svelte.dev/docs/kit/$app-navigation).
+	// Guarded so it's a no-op — same instant swap as before this feature
+	// existed — on browsers without the API (Firefox, older Safari) and for
+	// full-page/back-forward-cache navigations `startViewTransition` can't wrap.
+	onNavigate((navigation) => {
+		if (!document.startViewTransition || navigation.willUnload) return;
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 
 	// Any client navigation with a load (SSR data) sets `navigating.to`. Show a
 	// top progress bar for its duration so a slow load reads as "working", not

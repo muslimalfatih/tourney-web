@@ -8,6 +8,6 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		tournament,
 		tournamentSlug: params.slug,
 		fetch,
-		view: 'schedule'
+		view: 'players'
 	});
 };

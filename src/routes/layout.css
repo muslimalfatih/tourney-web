@@ -21,52 +21,67 @@
 }
 
 /*
- * LAGA BURGUNDY — light-only design system (v2 palette).
- * Mapped into Tailwind v4 @theme so utilities like `bg-surface`,
- * `text-muted`, `border-subtle`, `text-accent`, `rounded-lg` resolve to the
- * system. Dark mode is intentionally NOT defined — this product commits to a
- * single premium burgundy-light surface. White-label branding can override the
- * accent tokens per tournament via inline CSS custom properties later.
+ * LAGA — dark-blue design system, reinstated after a brief burgundy detour.
+ * The palette is the /bracket-demo palette: every value below is a --bk-*
+ * fallback lifted verbatim out of the bracket components (BracketMatchCard,
+ * PagedKnockoutBracket), so the bracket and the chrome around it are the same
+ * material. Light mode is intentionally NOT defined.
  *
- * Canonical faces: Zodiak (display) + Satoshi (body). The licensed binaries are
- * added via @font-face when available; the stacks below fall back gracefully.
+ * /bracket-demo keeps its OWN hardcoded copy of these exact values (see
+ * bracket-demo/+page.svelte) rather than reading these tokens — that
+ * decoupling means the demo stays a stable dark reference no matter which way
+ * the app theme swings next; it needed zero edits across the burgundy
+ * round-trip and needs zero edits now that this matches it again by
+ * coincidence, not by reading it. The --bk-* re-theme wrapper around
+ * <PagedKnockoutBracket> in TournamentView.svelte maps to these tokens
+ * directly, so it re-themes automatically with no file change either.
+ *
+ * Canonical faces: Zodiak (display) + Satoshi (body) were the intended
+ * binaries; Zodiak isn't loaded, so display text actually renders in Georgia
+ * (see the lining-nums note below). --font-body stays the demo's system-sans
+ * stack, not Satoshi — that pairing was its own explicit decision, independent
+ * of color.
  */
 @theme {
-	/* grounds + surfaces */
-	--color-page: #fbf6f7;
-	--color-surface: #ffffff;
-	--color-subtle: #f3e9ec;
-	--color-border: rgba(143, 24, 58, 0.14);
+	/* grounds + surfaces — --bk-bg / --bk-card-bg / --bk-nav-hover / --bk-card-border */
+	--color-page: #0e1015;
+	--color-surface: #191c22;
+	--color-subtle: #23272f;
+	--color-border: #2a2e37;
 
-	/* text */
-	--color-primary: #2b0a12;
-	--color-muted: rgba(46, 10, 18, 0.7);
-	--color-on-accent: #ffffff;
+	/* text — --bk-text / --bk-muted (5.2:1 on page) */
+	--color-primary: #e7e9ee;
+	--color-muted: #7a8194;
+	/* Ink on accent/danger/gold fills. Dark, not white: white on #5b8def is
+	   only 3.2:1, the page ground on it is 5.8:1. */
+	--color-on-accent: #0e1015;
 
-	/* accents (locked anchor) */
-	--color-accent: #8f183a;
-	--color-accent-hover: #7a1230;
-	--color-accent-soft: #d98a99;
-	--color-gold: #e1b869; /* seeds / special badges only */
+	/* accents (locked anchor) — --bk-accent / --bk-gold */
+	--color-accent: #5b8def;
+	--color-accent-hover: #7aa3f5;
+	--color-accent-soft: #3f5c99;
+	--color-gold: #d4a94e; /* seeds / special badges only */
 
-	/* semantic (separate from accent; not brand hues) */
-	--color-danger: #b3261e;
+	/* semantic (separate from accent; not brand hues). Lightened from the
+	   light-theme #b3261e, which sinks into a dark ground. */
+	--color-danger: #f4737e;
 
 	/* radii */
 	--radius-lg: 18px;
 	--radius-md: 12px;
 	--radius-pill: 999px;
 
-	/* shadows */
-	--shadow-subtle: 0 8px 25px rgba(0, 0, 0, 0.08);
-	--shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.16);
+	/* shadows — a dark ground swallows the light-theme 8%/16% blacks, so these
+	   are the bracket card's own elevation instead. */
+	--shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.24);
+	--shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.55);
 
 	--font-display: 'Zodiak', 'Georgia', 'Times New Roman', serif;
-	--font-body: 'Satoshi', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 :root {
-	color-scheme: light;
+	color-scheme: dark;
 }
 
 html,
@@ -75,14 +90,29 @@ body {
 	color: var(--color-primary);
 	font-family: var(--font-body);
 	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
-/* Display face for headings by default. */
+/* Display face for headings by default.
+ *
+ * lining-nums is not optional with this stack: Zodiak is unlicensed here so the
+ * face that actually renders is Georgia, whose figures are old-style by default
+ * — 3/4/5/7/9 hang below the baseline, 0/1/2 sit at x-height. `font-display` is
+ * on scores, standings ranks, kickoff times and match numbers all over the app,
+ * where bobbing digits read as a rendering bug.
+ *
+ * Deliberately unlayered: Tailwind's `tabular-nums` utility (paired with
+ * `font-display` in ~10 places) rewrites the whole font-variant-numeric
+ * shorthand from @layer utilities, which would drop lining back to old-style.
+ * Unlayered beats every layer, so both keywords survive. Display text is
+ * titles, ranks and scores — tabular everywhere here is what we want anyway.
+ */
 h1,
 h2,
 h3,
 .font-display {
 	font-family: var(--font-display);
+	font-variant-numeric: lining-nums tabular-nums;
 }
 
 /* Thin, on-theme scrollbars for the horizontal bracket area. */
@@ -199,6 +229,47 @@ h3,
 	.motion-modal[data-state='open'],
 	.motion-menu[data-state='open'] {
 		animation: overlay-in 120ms ease both;
+	}
+}
+
+/* Public tournament content swap. Clicking a category/gender chip or the
+ * group/knockout switcher replaces the division name and the whole
+ * standings/bracket region with a different division's data — with no
+ * transition, that read as a hard flash (find-animation-opportunities: content
+ * teleport, "preventing a jarring change"). Named regions on `TournamentView`
+ * (`.vt-label`, `.vt-content`) opt only those two into the View Transitions
+ * cross-fade in +layout.svelte's onNavigate — chrome that doesn't change
+ * (header, hero title, filter chips, the switcher itself) stays untouched
+ * rather than re-fading on every click, and the chips/switcher already have
+ * their own instant press feedback (SegmentedControl/Chip transition-colors).
+ *
+ * Static names, not per-content keys: /mixed-doubles/groups and
+ * /open-championship/bracket are different route files, so switching between
+ * them remounts the component. A stable view-transition-name is what lets the
+ * browser match old->new across that remount and still cross-fade instead of
+ * seeing two unrelated elements. */
+.vt-label {
+	view-transition-name: division-label;
+}
+.vt-content {
+	view-transition-name: tournament-content;
+}
+::view-transition-old(division-label),
+::view-transition-new(division-label),
+::view-transition-old(tournament-content),
+::view-transition-new(tournament-content) {
+	animation-duration: 220ms;
+	animation-timing-function: ease-out;
+}
+/* Gentler, not zero (Apple §14 / this repo's existing reduced-motion
+ * convention) — View Transitions cross-fade opacity only by default, no
+ * slide/scale to strip, so shortening the duration is the whole adjustment. */
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-old(division-label),
+	::view-transition-new(division-label),
+	::view-transition-old(tournament-content),
+	::view-transition-new(tournament-content) {
+		animation-duration: 90ms;
 	}
 }
 

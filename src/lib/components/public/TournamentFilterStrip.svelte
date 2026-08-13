@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { EventDivision, EventGender } from '$lib/api/types';
-	import Chip from '$lib/components/ui/Chip.svelte';
-	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import Select, { type SelectItem } from '$lib/components/ui/Select.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 
 	type ChangePayload = {
@@ -11,20 +10,29 @@
 
 	let {
 		events,
-		category,
-		gender,
+		eventId,
 		onchange,
 		card = false
 	}: {
 		events: EventDivision[];
-		category: string | null;
-		gender: EventGender | null;
+		// Which division is active, by id — precise selection, no re-deriving a
+		// match from category/gender inside this component.
+		eventId: string | null;
 		onchange: (next: ChangePayload) => void;
 		// Wrap in a Card (public page). Dashboard passes card={false} and supplies
 		// its own Card + the "+ Add category" affordance.
 		card?: boolean;
 	} = $props();
 
+	// ONE flat list of the real divisions, not two independent level/gender
+	// axes. Two crossed pickers implied a grid the tournament doesn't fill —
+	// most cells are empty, and picking a value on one axis could silently
+	// re-resolve the other to keep a division that exists. A flat list can
+	// only ever offer a division that's actually there, so there's nothing
+	// left to silently resolve. Matches how real tournament sites do this:
+	// the US Open site (per USTA's own help docs) has visitors "select the
+	// event you are playing in from the drop-down" — one control, a named
+	// list — not crossed filters.
 	const catOf = (e: EventDivision) => e.category?.trim() ?? '';
 
 	// Skill categories sort by ability, not first-seen: newbie → beginner →
@@ -34,56 +42,49 @@
 		const i = CATEGORY_ORDER.indexOf(c.toLowerCase());
 		return i === -1 ? CATEGORY_ORDER.length : i;
 	};
+	const GENDER_ORDER: EventGender[] = ['men', 'women', 'mixed'];
+	const genderLabel: Record<EventGender, string> = { men: 'Men', women: 'Women', mixed: 'Mixed' };
 
-	// Distinct REAL categories, ability-sorted. Uncategorised events have no chip.
-	// Show the category row only when there's more than one to choose between.
-	const categories = $derived(
-		[...new Set(events.map(catOf).filter((c) => c !== ''))].sort(
-			(a, b) => catRank(a) - catRank(b) || a.localeCompare(b)
-		)
+	// Label is level + gender, not the division's own name — the name/display
+	// name is already the page's hero title above this control, so repeating
+	// it here would say the same thing twice for the one division already
+	// selected, and add nothing for the others.
+	const items: SelectItem[] = $derived(
+		[...events]
+			.sort(
+				(a, b) =>
+					catRank(catOf(a)) - catRank(catOf(b)) ||
+					GENDER_ORDER.indexOf(a.gender) - GENDER_ORDER.indexOf(b.gender)
+			)
+			.map((e) => ({
+				value: e.id,
+				label: [catOf(e), genderLabel[e.gender]].filter(Boolean).join(' · ') || e.name
+			}))
 	);
-	const showCategories = $derived(categories.length > 1);
 
-	// Gender pills are ALWAYS shown; each is disabled when the selected category
-	// has no event of that gender (visible-but-inert rather than hidden). No "All"
-	// option — an unset gender simply lights no pill and shows every gender.
-	const allGenders: { value: EventGender; label: string }[] = [
-		{ value: 'men', label: 'Men' },
-		{ value: 'women', label: 'Women' },
-		{ value: 'mixed', label: 'Mixed' }
-	];
-	const gendersInCat = $derived(
-		new Set(events.filter((e) => category == null || catOf(e) === category).map((e) => e.gender))
-	);
-	const genderOptions = $derived(
-		allGenders.map((g) => ({ ...g, disabled: !gendersInCat.has(g.value) }))
-	);
+	// Nothing to choose between a single division — same "only show a control
+	// when there's a real decision" rule the old two-axis version applied.
+	const showPicker = $derived(events.length > 1);
+
+	function handleChange(id: string) {
+		const ev = events.find((e) => e.id === id);
+		if (ev) onchange({ category: ev.category ?? null, gender: ev.gender });
+	}
 </script>
 
-{#snippet bar()}
-	<div class="flex flex-wrap items-center justify-between gap-4">
-		<!-- Category chips (left) — only the real categories, no label, no "All". -->
-		{#if showCategories}
-			<div class="flex flex-wrap items-center gap-2">
-				{#each categories as c (c)}
-					<Chip active={c === category} onclick={() => onchange({ category: c })}>{c}</Chip>
-				{/each}
-			</div>
-		{:else}
-			<span></span>
-		{/if}
-
-		<!-- Gender pills (right) — always shown; absent genders are disabled. -->
-		<SegmentedControl
-			options={genderOptions}
-			value={gender}
-			onchange={(g) => onchange({ gender: g })}
-		/>
+{#snippet picker()}
+	<div class="max-w-xs">
+		<span class="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+			Division
+		</span>
+		<Select value={eventId ?? ''} {items} onValueChange={handleChange} placeholder="Select a division" />
 	</div>
 {/snippet}
 
-{#if card}
-	<Card class="mb-8">{@render bar()}</Card>
-{:else}
-	{@render bar()}
+{#if showPicker}
+	{#if card}
+		<Card class="mb-8">{@render picker()}</Card>
+	{:else}
+		{@render picker()}
+	{/if}
 {/if}

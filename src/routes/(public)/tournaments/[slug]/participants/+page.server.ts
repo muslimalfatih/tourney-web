@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-// Folded into the single public page's view switcher.
+// Renamed to /players — shorter and it is what the page actually shows.
 export const load: PageServerLoad = ({ params }) => {
-	redirect(307, `/tournaments/${params.slug}/bracket?view=players`);
+	redirect(301, `/tournaments/${params.slug}/players`);
 };
