@@ -4,7 +4,12 @@
 	import { getMatch } from '$lib/api/endpoints/matches';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Tag from '$lib/components/ui/Tag.svelte';
+	import ShareDialog from '$lib/components/public/ShareDialog.svelte';
 	import { LiveConnection } from '$lib/stores/live.svelte';
+	import { page } from '$app/state';
+	import { shareUrl } from '$lib/utils/share';
+	import { SITE_BASE_URL } from '$lib/config/env';
+	import { Share2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 
 	let { data }: { data: { tournament: PublicTournament; match: MatchDetail } } = $props();
@@ -14,6 +19,9 @@
 	let liveMatch = $state<MatchDetail | null>(null);
 	const match = $derived(liveMatch ?? data.match);
 
+	let shareOpen = $state(false);
+	const currentShareUrl = $derived(shareUrl(page.url, SITE_BASE_URL));
+
 	let live = $state<LiveConnection | null>(null);
 	$effect(() => {
 		const slug = data.tournament.slug;
@@ -22,10 +30,13 @@
 		conn.start();
 		return () => conn.stop();
 	});
+	// Refetch on events AND on reconnect (`generation` bumps per connect) so a
+	// dropped stream catches up instead of showing a stale score.
 	$effect(() => {
 		const ev = live?.lastEvent;
+		const gen = live?.generation ?? 0;
 		const id = data.match.id;
-		if (ev && id) {
+		if ((ev || gen > 0) && id) {
 			getMatch(id)
 				.then((m) => (liveMatch = m))
 				.catch(() => {});
@@ -40,7 +51,13 @@
 		return !!s?.participant_id && s.participant_id === match.winner_participant_id;
 	}
 	const tone = (s: string) =>
-		s === 'completed' ? 'published' : s === 'live' ? 'gold' : 'draft';
+		s === 'completed' || s === 'walkover' || s === 'retired'
+			? 'published'
+			: s === 'live'
+				? 'gold'
+				: s === 'cancelled'
+					? 'archived'
+					: 'draft';
 </script>
 
 <a
@@ -51,6 +68,13 @@
 <div class="mb-4 mt-3 flex items-center gap-3">
 	<h2 class="font-display text-lg uppercase tracking-[0.06em] text-primary">Match {match.match_no}</h2>
 	<Tag tone={tone(match.status)}>{match.status}</Tag>
+	<button
+		type="button"
+		onclick={() => (shareOpen = true)}
+		class="ml-auto flex items-center gap-1.5 rounded-pill border border-border px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-primary"
+	>
+		<Share2 class="size-3.5" /> Share
+	</button>
 	{#if live?.connected && match.status === 'live'}
 		<span class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-gold">
 			<span class="size-1.5 animate-pulse rounded-full bg-gold"></span> Live
@@ -77,3 +101,5 @@
 		</div>
 	{/each}
 </Card>
+
+<ShareDialog bind:open={shareOpen} url={currentShareUrl} title="Match {data.match.match_no} — {data.tournament.name}" />

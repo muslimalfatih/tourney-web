@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PublicTournament, EventGender, EventDivision } from '$lib/api/types';
 	import type { EventBracket, Standing, GroupKnockout } from '$lib/api/endpoints/events';
-	import type { ScheduleSlot } from '$lib/api/endpoints/schedule';
+	import { listPublicSchedule, type ScheduleSlot } from '$lib/api/endpoints/schedule';
 	import type { Participant } from '$lib/api/endpoints/participants';
 	import { getEventBracket, getEventStandings, getGroupKnockout } from '$lib/api/endpoints/events';
 	import { goto } from '$app/navigation';
@@ -12,6 +12,10 @@
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import TournamentFilterStrip from '$lib/components/public/TournamentFilterStrip.svelte';
 	import TournamentSchedule from '$lib/components/public/TournamentSchedule.svelte';
+	import ShareDialog from '$lib/components/public/ShareDialog.svelte';
+	import { shareUrl } from '$lib/utils/share';
+	import { SITE_BASE_URL } from '$lib/config/env';
+	import { Share2, MonitorPlay } from '@lucide/svelte';
 	import PagedKnockoutBracket from '$lib/components/bracket/PagedKnockoutBracket.svelte';
 	import { adaptBracketRounds } from '$lib/utils/bracket-adapter';
 	import Standings from '$lib/components/bracket/Standings.svelte';
@@ -89,6 +93,12 @@
 	// than a path fragment that scrapers would reject.
 	const canonicalUrl = $derived(new URL(page.url.pathname, page.url.origin).href);
 
+	// Share: the exact current public view (path + whitelisted filters),
+	// canonicalized to the configured site origin. One dialog serves every
+	// public surface this shell renders (bracket, standings, schedule, players).
+	let shareOpen = $state(false);
+	const currentShareUrl = $derived(shareUrl(page.url, SITE_BASE_URL));
+
 	/** Canonical path for a division + phase. Mirrors divisionPath() on the
 	 *  server; both exist because one runs per-navigation in the browser and the
 	 *  other builds redirect targets during SSR. */
@@ -135,9 +145,11 @@
 	let liveBracket = $state<EventBracket | null>(null);
 	let liveStandings = $state<Standing[] | null>(null);
 	let liveGK = $state<GroupKnockout | null>(null);
+	let liveSchedule = $state<ScheduleSlot[] | null>(null);
 	const bracket = $derived(liveBracket ?? data.bracket);
 	const standings = $derived(liveStandings ?? data.standings);
 	const groupKnockout = $derived(liveGK ?? data.groupKnockout);
+	const schedule = $derived(liveSchedule ?? data.schedule);
 
 	let live = $state<LiveConnection | null>(null);
 	$effect(() => {
@@ -146,11 +158,19 @@
 		conn.start();
 		return () => conn.stop();
 	});
+	// Refetch on every event AND on every (re)connect: the stream replays
+	// nothing, so a reconnect after a dropped connection must catch up on
+	// whatever was missed. `generation` bumps once per successful connect.
 	$effect(() => {
 		const ev = live?.lastEvent;
+		const gen = live?.generation ?? 0;
 		const eventId = data.eventId;
 		const fmt = data.format;
-		if (!ev || !eventId) return;
+		if (gen === 0 && !ev) return; // nothing to catch up on before first connect
+		if (ev?.name === 'schedule.updated' || data.view === 'schedule') {
+			listPublicSchedule(data.tournament.slug).then((s) => (liveSchedule = s)).catch(() => {});
+		}
+		if (!eventId) return;
 		if (fmt === 'round_robin') getEventStandings(eventId).then((s) => (liveStandings = s.standings)).catch(() => {});
 		else if (fmt === 'group_knockout') getGroupKnockout(eventId).then((g) => (liveGK = g)).catch(() => {});
 		else getEventBracket(eventId).then((b) => (liveBracket = b)).catch(() => {});
@@ -240,7 +260,7 @@
      for. "Bracket" points at whichever division + phase is currently active
      (falls back to the tournament's first division when there is none, e.g.
      when arriving from Schedule) rather than resetting it. ============ -->
-<div class="mb-8 flex justify-center gap-6 border-b border-border">
+<div class="relative mb-8 flex justify-center gap-6 border-b border-border">
 	<a
 		href={pathFor(activeEvent?.slug ?? null, requestedView)}
 		class={cn(
@@ -250,6 +270,25 @@
 	>
 		Bracket
 	</a>
+	<!-- Utility actions live in the nav rail: present on every public surface
+	     without competing with content. Share carries the exact current view;
+	     Present opens the fullscreen court display. -->
+	<div class="absolute right-0 top-0 -mt-1 flex items-center gap-2">
+		<a
+			href="/tournaments/{tournamentSlug}/present"
+			class="hidden items-center gap-1.5 rounded-pill border border-border px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-primary sm:flex"
+		>
+			<MonitorPlay class="size-3.5" /> Present
+		</a>
+		<button
+			type="button"
+			onclick={() => (shareOpen = true)}
+			aria-label="Share this view"
+			class="flex items-center gap-1.5 rounded-pill border border-border p-2 text-[11px] font-bold uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-primary sm:px-3 sm:py-1.5"
+		>
+			<Share2 class="size-3.5" /><span class="hidden sm:inline">Share</span>
+		</button>
+	</div>
 	<a
 		href="/tournaments/{tournamentSlug}/schedule"
 		class={cn(
@@ -261,10 +300,21 @@
 	</a>
 </div>
 
+<!-- Connection state: quiet while healthy, one calm line while catching up.
+     Only shown after a working stream drops, never during first connect. -->
+{#if live?.reconnecting}
+	<p
+		role="status"
+		class="mx-auto -mt-4 mb-6 w-fit rounded-pill border border-border bg-surface px-3 py-1 text-[11px] text-muted"
+	>
+		Live updates paused — reconnecting…
+	</p>
+{/if}
+
 {#if isTournamentWide}
 	<div class="vt-content mx-auto max-w-3xl">
 		{#if data.view === 'schedule'}
-			<TournamentSchedule slots={data.schedule} timezone={data.tournament.timezone} />
+			<TournamentSchedule slots={schedule} timezone={data.tournament.timezone} />
 		{:else}
 			<EmptyState title="Player list coming soon" message="Rosters will appear here." />
 		{/if}
@@ -351,3 +401,5 @@
 	{/if}
 </div>
 {/if}
+
+<ShareDialog bind:open={shareOpen} url={currentShareUrl} title={shareTitle} />

@@ -3,6 +3,8 @@
 	import type { Court } from '$lib/api/endpoints/schedule';
 	import { enhance } from '$app/forms';
 	import { toastEnhance } from '$lib/utils/toast';
+	import { zonedDayLabel, zonedTime } from '$lib/utils/tz';
+	import { scoreSuccessMessage } from '$lib/utils/score-errors';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Field from '$lib/components/ui/Field.svelte';
@@ -15,12 +17,15 @@
 		open = $bindable(false),
 		match,
 		tournamentId,
-		courts
+		courts,
+		timezone = ''
 	}: {
 		open: boolean;
 		match: BracketMatch | null;
 		tournamentId: string;
 		courts: Court[];
+		// Tournament IANA zone — display hint for conflict messages only.
+		timezone?: string;
 	} = $props();
 
 	function slot(n: number): BracketSlot | undefined {
@@ -107,7 +112,11 @@
 				method="POST"
 				action="?/schedule"
 				use:enhance={toastEnhance({
-					success: 'Schedule saved',
+					success: (fd) => {
+						const at = String(fd.get('starts_at') ?? '');
+						const when = at ? `${zonedDayLabel(at, timezone, 'short')}, ${zonedTime(at, timezone)}` : '';
+						return `Schedule saved${when ? ` — ${when}` : ''}`;
+					},
 					error: 'Could not save the schedule.',
 					before: () => {
 						submitting = true;
@@ -120,6 +129,7 @@
 			>
 				<h4 class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Schedule</h4>
 				<input type="hidden" name="tournament_id" value={tournamentId} />
+				<input type="hidden" name="tz" value={timezone} />
 				<input type="hidden" name="match_id" value={match.id} />
 				<!-- bits-ui fields aren't native inputs; the picker writes an ISO
 				     string into `startsAt`, forwarded to the action via this hidden field. -->
@@ -223,7 +233,7 @@
 									<button
 										type="button"
 										onclick={() => removeSet(i)}
-										class="grid size-6 place-items-center rounded-pill text-muted hover:text-danger"
+										class="grid size-8 place-items-center rounded-pill text-muted hover:text-danger"
 										aria-label="Remove set">×</button
 									>
 								{/if}

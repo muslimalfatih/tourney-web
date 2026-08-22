@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Participant } from '$lib/api/endpoints/participants';
 	import type { EventBracket } from '$lib/api/endpoints/events';
+	import { tick } from 'svelte';
 	import { enhance } from '$app/forms';
 	import { toastEnhance } from '$lib/utils/toast';
 	import { classifyPairing } from '$lib/utils/fixtures';
@@ -57,8 +58,13 @@
 	const verdict = $derived(canAdd ? classifyPairing(fixtures, teamA, teamB) : { kind: 'ok' as const });
 	let allowRematch = $state(false);
 
-	function submitAdd(asRematch = false) {
+	async function submitAdd(asRematch = false) {
 		allowRematch = asRematch;
+		// Flush state into the hidden allow_rematch input BEFORE submitting —
+		// requestSubmit reads the DOM synchronously, and without the tick the
+		// rematch confirmation posted allow_rematch=false and 409'd again
+		// (found by the Phase 4E browser suite).
+		await tick();
 		addForm?.requestSubmit();
 	}
 

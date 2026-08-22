@@ -200,7 +200,11 @@
 		method="POST"
 		action={editingId ? '?/editSlot' : '?/addSlot'}
 		use:enhance={toastEnhance({
-			success: editingId ? 'Slot updated' : 'Match scheduled',
+			success: (fd) => {
+				const at = String(fd.get('starts_at') ?? '');
+				const when = at ? `${zonedDayLabel(at, tz, 'short')}, ${zonedTime(at, tz)}` : '';
+				return `${editingId ? 'Slot updated' : 'Match scheduled'}${when ? ` — ${when}` : ''}`;
+			},
 			reset: true,
 			before: () => { submitting = true; },
 			onSuccess: () => { slotOpen = false; },

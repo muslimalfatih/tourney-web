@@ -22,7 +22,14 @@ export class LiveConnection {
 	private slug: string;
 
 	connected = $state(false);
+	// True only after a previously-working stream drops — drives the
+	// "Reconnecting" hint without flashing it during the initial connect.
+	reconnecting = $state(false);
 	lastEvent = $state<LiveEvent | null>(null);
+	// Bumps on every (re)connect. Consumers refetch when it changes, which
+	// covers events missed while the stream was down — EventSource replays
+	// nothing, so reconnect + refetch is what keeps the page from going stale.
+	generation = $state(0);
 
 	constructor(slug: string) {
 		this.slug = slug;
@@ -36,19 +43,23 @@ export class LiveConnection {
 
 		this.source.addEventListener('connected', () => {
 			this.connected = true;
+			this.reconnecting = false;
+			this.generation += 1;
 		});
 
-		// The API emits named events (match.score, match.status). Listen broadly
-		// via onmessage plus the known named events.
-		for (const name of ['match.score', 'match.status']) {
+		// The API emits named events; onmessage doesn't fire for named SSE
+		// events, so each name is registered explicitly.
+		for (const name of ['match.score', 'match.status', 'schedule.updated']) {
 			this.source.addEventListener(name, (e) => {
 				this.lastEvent = { name, data: safeParse((e as MessageEvent).data) };
 			});
 		}
 
 		this.source.onerror = () => {
+			if (this.connected) this.reconnecting = true;
 			this.connected = false;
-			// EventSource retries automatically; nothing to do here.
+			// EventSource retries automatically; the 'connected' handler above
+			// bumps `generation` when it succeeds so consumers can catch up.
 		};
 	}
 
@@ -56,6 +67,7 @@ export class LiveConnection {
 		this.source?.close();
 		this.source = null;
 		this.connected = false;
+		this.reconnecting = false;
 	}
 }
 

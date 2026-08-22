@@ -159,6 +159,37 @@
 		return `/tournaments/${data.tournament.slug}/bracket?${qs}`;
 	});
 
+	// --- Setup progress (Overview) ---
+	// The four stations every division passes through, derived entirely from
+	// data already loaded — no extra fetches. "Enter scores" completes when
+	// every playable match is decided; it shows progress before that.
+	const DECIDED_STATUSES = new Set(['completed', 'walkover', 'retired', 'cancelled', 'bye']);
+	const allBracketMatches = $derived(data.bracket.rounds.flatMap((r) => r.matches));
+	const decidedCount = $derived(
+		allBracketMatches.filter((m) => DECIDED_STATUSES.has(m.status)).length
+	);
+	const setupSteps = $derived.by(() => {
+		const total = allBracketMatches.length;
+		return [
+			{
+				label: 'Add participants',
+				done: data.event.participant_count >= 2,
+				hint: `${data.event.participant_count} entered`
+			},
+			{ label: 'Build the draw', done: hasDraw, hint: hasDraw ? `${total} matches` : 'Draw setup tab' },
+			{
+				label: 'Publish tournament',
+				done: data.tournament.status === 'published',
+				hint: data.tournament.status === 'published' ? 'Public' : 'From the tournament page'
+			},
+			{
+				label: 'Enter scores',
+				done: total > 0 && decidedCount === total,
+				hint: total > 0 ? `${decidedCount} of ${total} decided` : '—'
+			}
+		];
+	});
+
 	// --- Bracket tab match panel ---
 	let panelOpen = $state(false);
 	let activeId = $state<string | null>(null);
@@ -174,11 +205,14 @@
 	}
 </script>
 
-<!-- Header -->
+<!-- Header — the breadcrumb names the tournament so the organizer always
+     knows WHICH event's division they're editing (several tournaments can
+     hold same-named divisions like "Men's Doubles"). -->
 <div class="mb-6">
 	<a
 		href="/organizer/tournaments/{data.event.tournament_id}"
-		class="text-sm text-muted transition-colors hover:text-primary">← Tournament</a
+		class="text-sm text-muted transition-colors hover:text-primary"
+		>← {data.tournament.name}</a
 	>
 	<div class="mt-2 flex flex-wrap items-center justify-between gap-3">
 		<div>
@@ -217,29 +251,43 @@
 			</Card>
 		</div>
 
-		<div
-			class="mt-4 flex flex-wrap items-center gap-4 rounded-md border border-border bg-subtle p-4"
-		>
-			<div class="grow">
-				<div class="text-[13px] font-bold text-primary">
-					{hasDraw ? 'Draw is ready' : 'Ready to build'}
-				</div>
-				<p class="mt-0.5 text-[13px] text-muted">
-					{#if data.event.participant_count < 2}
-						Add at least 2 {entryNoun}s in the Participants tab.
-					{:else if hasDraw}
-						This event has a {formatLabel[data.event.format]?.toLowerCase()} draw.
-					{:else}
-						Set up the {formatLabel[data.event.format]?.toLowerCase()} draw in the Draw setup tab.
-					{/if}
-				</p>
+		<!-- Setup progress: where this division is on its way to a finished,
+		     public draw. The current station (first not-done step) is
+		     highlighted; done steps carry a check. -->
+		<div class="mt-4 rounded-md border border-border bg-subtle p-4">
+			<ol class="grid gap-3 sm:grid-cols-4">
+				{#each setupSteps as step, i (step.label)}
+					{@const isCurrent = !step.done && setupSteps.slice(0, i).every((s) => s.done)}
+					<li class="flex items-start gap-2.5">
+						<span
+							class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-pill text-[10px] font-bold
+							{step.done
+								? 'bg-accent text-on-accent'
+								: isCurrent
+									? 'border border-accent text-accent'
+									: 'border border-border text-muted'}"
+							aria-hidden="true"
+						>
+							{#if step.done}✓{:else}{i + 1}{/if}
+						</span>
+						<div class="min-w-0">
+							<p class="text-[13px] font-bold {step.done || isCurrent ? 'text-primary' : 'text-muted'}">
+								{step.label}
+								{#if step.done}<span class="sr-only">(done)</span>{/if}
+							</p>
+							<p class="text-[12px] text-muted">{step.hint}</p>
+						</div>
+					</li>
+				{/each}
+			</ol>
+			<div class="mt-4 flex flex-wrap gap-2 border-t border-border/60 pt-3">
+				<Button onclick={() => onTab('builder')} disabled={data.event.participant_count < 2}>
+					{hasDraw ? 'Edit draw setup' : 'Set up draw'}
+				</Button>
+				{#if hasDraw}
+					<Button variant="subtle" onclick={() => onTab('bracket')}>View bracket</Button>
+				{/if}
 			</div>
-			<Button onclick={() => onTab('builder')} disabled={data.event.participant_count < 2}>
-				{hasDraw ? 'Edit draw setup' : 'Set up draw'}
-			</Button>
-			{#if hasDraw}
-				<Button variant="subtle" onclick={() => onTab('bracket')}>View bracket</Button>
-			{/if}
 		</div>
 
 		<!-- Group management (group_knockout events with a generated draw) -->
@@ -609,6 +657,7 @@
 	match={activeMatch}
 	tournamentId={data.event.tournament_id}
 	courts={data.courts}
+	timezone={data.tournament.timezone}
 />
 
 <form

@@ -9,45 +9,20 @@ import {
 	createCourt,
 	createSlot,
 	updateSlot,
-	deleteSlot,
-	type ScheduleConflict
+	deleteSlot
 } from '$lib/api/endpoints/schedule';
 import { ApiError } from '$lib/api/client';
-import { DEFAULT_TIMEZONE, zonedTime } from '$lib/utils/tz';
-
-// Humanize the API's structured conflict list for the form banner/toast.
-// Times render in the TOURNAMENT's zone (forwarded from the page as a display
-// hint), never the server's own locale.
-function fmtConflicts(list: ScheduleConflict[], tz: string): string {
-	const t = (iso: string) => zonedTime(iso, tz);
-	return list
-		.map((c) => {
-			const why =
-				c.type === 'court_overlap'
-					? 'court busy'
-					: c.type === 'participant_overlap'
-						? 'players already on court'
-						: 'short rest';
-			return `${c.court_name} ${t(c.starts_at)}–${t(c.ends_at)} (${why}${c.match_label ? `: ${c.match_label}` : ''})`;
-		})
-		.join('; ');
-}
+import { DEFAULT_TIMEZONE } from '$lib/utils/tz';
+import { describeScheduleError } from '$lib/utils/schedule-errors';
 
 // Map a slot-write ApiError to the form payload: hard conflicts are plain
 // errors; insufficient rest comes back as `restWarning` so the modal can offer
 // the explicit override checkbox.
 function slotFail(e: unknown, fallback: string, tz: string) {
 	if (e instanceof ApiError) {
-		const d = (e.details ?? {}) as { conflicts?: ScheduleConflict[]; warnings?: ScheduleConflict[] };
-		if (e.code === 'insufficient_rest') {
-			return fail(422, {
-				restWarning: `Less than 30 minutes rest for: ${fmtConflicts(d.warnings ?? [], tz)}.`
-			});
-		}
-		if (e.code === 'schedule_conflict') {
-			return fail(422, { error: `Schedule conflict — ${fmtConflicts(d.conflicts ?? [], tz)}.` });
-		}
-		return fail(e.status, { error: e.message });
+		const f = describeScheduleError(e, tz);
+		if (f.restWarning) return fail(422, { restWarning: f.restWarning });
+		return fail(e.status, { error: f.error ?? e.message });
 	}
 	return fail(500, { error: fallback });
 }

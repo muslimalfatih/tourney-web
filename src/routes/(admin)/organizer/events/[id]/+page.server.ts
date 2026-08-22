@@ -26,6 +26,9 @@ import {
 import { listCourts, createSlot } from '$lib/api/endpoints/schedule';
 import { submitScore, setMatchStatus, type SetScore, type Completion } from '$lib/api/endpoints/matches';
 import { ApiError } from '$lib/api/client';
+import { describeScoreError } from '$lib/utils/score-errors';
+import { describeScheduleError } from '$lib/utils/schedule-errors';
+import { DEFAULT_TIMEZONE } from '$lib/utils/tz';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	const token = locals.session.accessToken;
@@ -260,7 +263,17 @@ export const actions: Actions = {
 			);
 			return { scheduled: true };
 		} catch (e) {
-			return fail(500, { error: e instanceof ApiError ? e.message : 'Could not schedule.' });
+			if (e instanceof ApiError) {
+				const tz = String(form.get('tz') ?? '') || DEFAULT_TIMEZONE;
+				const f = describeScheduleError(e, tz);
+				// This quick panel has no override control — point at the page
+				// that does instead of dead-ending the organizer.
+				if (f.restWarning) {
+					return fail(422, { error: `${f.restWarning} Override from the Schedule page if intended.` });
+				}
+				return fail(e.status, { error: f.error ?? e.message });
+			}
+			return fail(500, { error: 'Could not schedule.' });
 		}
 	},
 
@@ -296,7 +309,8 @@ export const actions: Actions = {
 			);
 			return { scored: true };
 		} catch (e) {
-			return fail(500, { error: e instanceof ApiError ? e.message : 'Could not save the score.' });
+			if (e instanceof ApiError) return fail(e.status, { error: describeScoreError(e) });
+			return fail(500, { error: 'Could not save the score.' });
 		}
 	},
 

@@ -9,17 +9,26 @@
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
 	import { inputClass } from '$lib/utils/ui';
+	import { scoreSuccessMessage } from '$lib/utils/score-errors';
 
 	let {
 		data,
 		form
 	}: { data: { event: EventRow; matches: MatchDetail[] }; form?: { error?: string } } = $props();
 
-	// Score modal state.
+	// Score modal state. Sets carry optional tiebreak points (a 7-6 set is only
+	// legal with them — the server enforces it; the inputs just make it possible).
 	let scoreOpen = $state(false);
 	let active = $state<MatchDetail | null>(null);
-	let sets = $state<{ p1: string; p2: string }[]>([]);
+	let sets = $state<{ p1: string; p2: string; tb1: string; tb2: string }[]>([]);
 	let submitting = $state(false);
+	// Ending: how the match concluded. "normal" derives the winner from the
+	// sets; walkover/retired need the organizer to name the winner; cancelled
+	// voids the fixture (no winner, excluded from standings).
+	let ending = $state<'normal' | 'walkover' | 'retired' | 'cancelled'>('normal');
+	let winnerSlot = $state(0);
+	const needsWinner = $derived(ending === 'walkover' || ending === 'retired');
+	const showSets = $derived(ending !== 'walkover' && ending !== 'cancelled');
 
 	function slot(m: MatchDetail, n: number): MatchSlot | undefined {
 		return m.participants?.find((p) => p.slot === n);
@@ -39,20 +48,36 @@
 	function playable(m: MatchDetail): boolean {
 		return !!slot(m, 1)?.participant_id && !!slot(m, 2)?.participant_id;
 	}
+	// Decided endings (any of the four) are corrected via Edit, never Mark live.
+	const decided = (s: string) => ['completed', 'walkover', 'retired', 'cancelled'].includes(s);
 
+	// Decided endings share the "done" tone; cancelled reads as voided.
 	const tone = (s: string) =>
-		s === 'completed' ? 'published' : s === 'live' ? 'gold' : s === 'bye' ? 'archived' : 'draft';
+		s === 'completed' || s === 'walkover' || s === 'retired'
+			? 'published'
+			: s === 'live'
+				? 'gold'
+				: s === 'bye' || s === 'cancelled'
+					? 'archived'
+					: 'draft';
 
 	function openScore(m: MatchDetail) {
 		active = m;
 		sets =
 			m.sets?.length > 0
-				? m.sets.map((s) => ({ p1: String(s.games_a), p2: String(s.games_b) }))
-				: [{ p1: '', p2: '' }];
+				? m.sets.map((s) => ({
+						p1: String(s.games_a),
+						p2: String(s.games_b),
+						tb1: s.tiebreak_a != null ? String(s.tiebreak_a) : '',
+						tb2: s.tiebreak_b != null ? String(s.tiebreak_b) : ''
+					}))
+				: [{ p1: '', p2: '', tb1: '', tb2: '' }];
+		ending = 'normal';
+		winnerSlot = 0;
 		scoreOpen = true;
 	}
 	function addSet() {
-		sets = [...sets, { p1: '', p2: '' }];
+		sets = [...sets, { p1: '', p2: '', tb1: '', tb2: '' }];
 	}
 	function removeSet(i: number) {
 		sets = sets.filter((_, idx) => idx !== i);
@@ -115,7 +140,7 @@
 						<Tag tone={tone(m.status)} class="shrink-0">{m.status}</Tag>
 					{/if}
 					<div class="flex shrink-0 gap-1">
-						{#if playable(m) && m.status !== 'completed'}
+						{#if playable(m) && !decided(m.status)}
 							{#if m.status !== 'live'}
 								<!-- One-click Mark live quick action on pending, playable rows. -->
 								<form
@@ -131,7 +156,7 @@
 								</form>
 							{/if}
 							<Button variant="ghost" size="sm" onclick={() => openScore(m)}>Score</Button>
-						{:else if m.status === 'completed'}
+						{:else if decided(m.status)}
 							<Button variant="ghost" size="sm" onclick={() => openScore(m)}>Edit</Button>
 						{/if}
 					</div>
@@ -152,7 +177,7 @@
 			method="POST"
 			action="?/score"
 			use:enhance={toastEnhance({
-				success: (fd) => (fd.get('completion') === 'normal' ? 'Match completed' : 'Score saved'),
+				success: (fd) => scoreSuccessMessage(String(fd.get('completion') ?? '')),
 				before: () => {
 					submitting = true;
 				},
@@ -167,24 +192,27 @@
 		>
 			<input type="hidden" name="matchId" value={active.id} />
 
-			<div class="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-[13px]">
-				<span class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Set</span>
-				<span class="w-14 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-muted"
-					>P1</span
-				>
-				<span class="w-14 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-muted"
-					>P2</span
-				>
-				{#each sets as s, i (i)}
-					<span class="text-muted">Set {i + 1}</span>
-					<input
-						name="games_a"
-						type="number"
-						min="0"
-						bind:value={s.p1}
-						class="{inputClass} w-14 px-2 text-center"
-					/>
-					<div class="flex items-center gap-1">
+			{#if showSets}
+				<div class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 text-[13px]">
+					<span class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Set</span>
+					<span class="w-14 truncate text-center text-[10px] font-bold uppercase tracking-[0.12em] text-muted"
+						>{name(active, 1).split(' ')[0]}</span
+					>
+					<span class="w-14 truncate text-center text-[10px] font-bold uppercase tracking-[0.12em] text-muted"
+						>{name(active, 2).split(' ')[0]}</span
+					>
+					<span class="w-20 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-muted"
+						>Tiebreak</span
+					>
+					{#each sets as s, i (i)}
+						<span class="text-muted">Set {i + 1}</span>
+						<input
+							name="games_a"
+							type="number"
+							min="0"
+							bind:value={s.p1}
+							class="{inputClass} w-14 px-2 text-center"
+						/>
 						<input
 							name="games_b"
 							type="number"
@@ -192,33 +220,96 @@
 							bind:value={s.p2}
 							class="{inputClass} w-14 px-2 text-center"
 						/>
-						{#if sets.length > 1}
-							<button
-								type="button"
-								onclick={() => removeSet(i)}
-								class="grid size-6 place-items-center rounded-pill text-muted hover:text-danger"
-								aria-label="Remove set">×</button
-							>
-						{/if}
-					</div>
-				{/each}
+						<div class="flex items-center gap-1">
+							<input
+								name="tiebreak_a"
+								type="number"
+								min="0"
+								bind:value={s.tb1}
+								placeholder="–"
+								aria-label="Set {i + 1} tiebreak, first side"
+								class="{inputClass} w-9 px-1 text-center"
+							/>
+							<input
+								name="tiebreak_b"
+								type="number"
+								min="0"
+								bind:value={s.tb2}
+								placeholder="–"
+								aria-label="Set {i + 1} tiebreak, second side"
+								class="{inputClass} w-9 px-1 text-center"
+							/>
+							{#if sets.length > 1}
+								<button
+									type="button"
+									onclick={() => removeSet(i)}
+									class="grid size-8 place-items-center rounded-pill text-muted hover:text-danger"
+									aria-label="Remove set {i + 1}">×</button
+								>
+							{/if}
+						</div>
+					{/each}
+				</div>
+
+				<button
+					type="button"
+					onclick={addSet}
+					class="self-start text-[11px] font-bold uppercase tracking-[0.12em] text-accent hover:text-accent-hover"
+					>+ Add set</button
+				>
+				<p class="text-[11px] text-muted">A 7-6 set needs its tiebreak points (e.g. 7-3).</p>
+			{/if}
+
+			<!-- Ending: played result vs the special conclusions. -->
+			<div class="flex flex-col gap-2">
+				<label
+					for="rr-ending"
+					class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Ending</label
+				>
+				<select id="rr-ending" bind:value={ending} class="{inputClass} w-full">
+					<option value="normal">Played result</option>
+					<option value="walkover">Walkover (opponent absent)</option>
+					<option value="retired">Retired mid-match</option>
+					<option value="cancelled">Cancelled (does not count)</option>
+				</select>
 			</div>
 
-			<button
-				type="button"
-				onclick={addSet}
-				class="self-start text-[11px] font-bold uppercase tracking-[0.12em] text-accent hover:text-accent-hover"
-				>+ Add set</button
-			>
+			{#if needsWinner}
+				<fieldset class="flex flex-col gap-2">
+					<legend class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
+						Winner
+					</legend>
+					{#each [1, 2] as n (n)}
+						<label class="flex items-center gap-2 text-[13px] text-primary">
+							<input type="radio" name="winner_slot" value={n} bind:group={winnerSlot} />
+							{name(active, n)}
+						</label>
+					{/each}
+				</fieldset>
+			{/if}
 
 			<div class="mt-2 flex justify-end gap-2">
 				<Button type="button" variant="ghost" onclick={() => (scoreOpen = false)}>Cancel</Button>
-				<Button type="submit" name="completion" value="incomplete" variant="subtle" disabled={submitting}
-					>Save progress</Button
-				>
-				<Button type="submit" name="completion" value="normal" disabled={submitting}
-					>{submitting ? 'Saving…' : 'Complete match'}</Button
-				>
+				{#if ending === 'normal'}
+					<Button
+						type="submit"
+						name="completion"
+						value="incomplete"
+						variant="subtle"
+						disabled={submitting}>Save progress</Button
+					>
+					<Button type="submit" name="completion" value="normal" disabled={submitting}
+						>{submitting ? 'Saving…' : 'Complete match'}</Button
+					>
+				{:else}
+					<Button
+						type="submit"
+						name="completion"
+						value={ending}
+						disabled={submitting || (needsWinner && !winnerSlot)}
+						>{submitting ? 'Saving…' : `Record ${ending}`}</Button
+					>
+				{/if}
 			</div>
 		</form>
 	</Modal>
