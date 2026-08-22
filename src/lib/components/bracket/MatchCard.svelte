@@ -14,11 +14,11 @@
 
 	/** Games per set for one side, formatted with a tiebreak superscript. */
 	function games(set: SetScore, side: 1 | 2): string {
-		const g = side === 1 ? set.p1_games : set.p2_games;
+		const g = side === 1 ? set.games_a : set.games_b;
 		return String(g);
 	}
 	function tiebreak(set: SetScore, side: 1 | 2): number | null | undefined {
-		return side === 1 ? set.p1_tiebreak : set.p2_tiebreak;
+		return side === 1 ? set.tiebreak_a : set.tiebreak_b;
 	}
 
 	const live = $derived(match.status === 'live');

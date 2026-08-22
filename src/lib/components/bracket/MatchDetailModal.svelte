@@ -143,8 +143,8 @@
 					<span class="flex shrink-0 items-center gap-2 font-display text-[15px] tabular-nums">
 						{#each match.sets ?? [] as s (s.set_number)}
 							<span class={isWinner(n) ? 'text-accent' : 'text-muted'}>
-								{n === 1 ? s.p1_games : s.p2_games}{#if n === 1 ? s.p1_tiebreak != null : s.p2_tiebreak != null}<sup
-										class="text-[10px]">{n === 1 ? s.p1_tiebreak : s.p2_tiebreak}</sup
+								{n === 1 ? s.games_a : s.games_b}{#if n === 1 ? s.tiebreak_a != null : s.tiebreak_b != null}<sup
+										class="text-[10px]">{n === 1 ? s.tiebreak_a : s.tiebreak_b}</sup
 									>{/if}
 							</span>
 						{/each}

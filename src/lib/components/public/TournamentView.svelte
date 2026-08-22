@@ -11,12 +11,14 @@
 	import LightBoard from '$lib/components/ui/LightBoard.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import TournamentFilterStrip from '$lib/components/public/TournamentFilterStrip.svelte';
+	import TournamentSchedule from '$lib/components/public/TournamentSchedule.svelte';
 	import PagedKnockoutBracket from '$lib/components/bracket/PagedKnockoutBracket.svelte';
 	import { adaptBracketRounds } from '$lib/utils/bracket-adapter';
 	import Standings from '$lib/components/bracket/Standings.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
 	import { LiveConnection } from '$lib/stores/live.svelte';
 	import { resolveDivision } from '$lib/utils/division-filter';
+	import { cn } from '$lib/utils/cn';
 
 	let {
 		data
@@ -162,7 +164,7 @@
 	const knockoutRounds = $derived(
 		data.format === 'group_knockout' ? (groupKnockout?.knockout ?? []) : (bracket?.rounds ?? [])
 	);
-	const adaptedKnockoutRounds = $derived(adaptBracketRounds(knockoutRounds));
+	const adaptedKnockoutRounds = $derived(adaptBracketRounds(knockoutRounds, data.tournament.timezone));
 	const hasKnockout = $derived(knockoutRounds.some((r) => r.matches.length > 0));
 </script>
 
@@ -207,7 +209,7 @@
 		class="mx-auto max-w-5xl"
 	/>
 
-	{#if data.activeLabel}
+	{#if data.activeLabel && !isTournamentWide}
 		<!-- Sans, not the Georgia display face. This is a label under a sign, and
 		     it now sits beneath a rigid dot-matrix rather than a serif title —
 		     a flowing serif was the odd voice out. Bold + wide tracking is the
@@ -231,35 +233,72 @@
 	{/if}
 </section>
 
-<!-- ============ FILTER CARD (category left, gender right) — self-hides when
-     there's nothing to filter (single/uncategorised division). Sits above the
-     view switcher: pick WHICH division first, then WHICH stage of it. ============ -->
-<TournamentFilterStrip {events} eventId={activeEvent?.id ?? null} card onchange={(next) => apply(next)} />
+<!-- ============ TOURNAMENT NAV (Bracket / Schedule) — real <a> links, not a
+     client-side tab switch: these are genuinely different pages (their own
+     URL, their own loader), so back/forward and deep-linking need to work,
+     which the ARIA-tabs pattern ($lib/components/ui/Tabs.svelte) isn't built
+     for. "Bracket" points at whichever division + phase is currently active
+     (falls back to the tournament's first division when there is none, e.g.
+     when arriving from Schedule) rather than resetting it. ============ -->
+<div class="mb-8 flex justify-center gap-6 border-b border-border">
+	<a
+		href={pathFor(activeEvent?.slug ?? null, requestedView)}
+		class={cn(
+			'-mb-px border-b-2 px-1 pb-3 text-[11px] font-bold uppercase tracking-[0.12em] transition-colors',
+			isTournamentWide ? 'border-transparent text-muted hover:text-primary' : 'border-accent text-primary'
+		)}
+	>
+		Bracket
+	</a>
+	<a
+		href="/tournaments/{tournamentSlug}/schedule"
+		class={cn(
+			'-mb-px border-b-2 px-1 pb-3 text-[11px] font-bold uppercase tracking-[0.12em] transition-colors',
+			data.view === 'schedule' ? 'border-accent text-primary' : 'border-transparent text-muted hover:text-primary'
+		)}
+	>
+		Schedule
+	</a>
+</div>
 
-<!-- ============ VIEW SWITCHER (centered pill) — both phases always shown;
-     the one this division lacks is disabled. Hidden only for round-robin
-     (no phases at all). ============ -->
-{#if data.format !== 'round_robin'}
-	<div class="mb-8 flex justify-center">
-		<SegmentedControl
-			options={viewTabs.map((t) => ({ value: t.v, label: t.l, disabled: t.disabled }))}
-			value={view}
-			onchange={(v) => apply({ view: v as View })}
-		/>
+{#if isTournamentWide}
+	<div class="vt-content mx-auto max-w-3xl">
+		{#if data.view === 'schedule'}
+			<TournamentSchedule slots={data.schedule} timezone={data.tournament.timezone} />
+		{:else}
+			<EmptyState title="Player list coming soon" message="Rosters will appear here." />
+		{/if}
 	</div>
-{/if}
+{:else}
+	<!-- ============ FILTER CARD (category left, gender right) — self-hides when
+	     there's nothing to filter (single/uncategorised division). Sits above the
+	     view switcher: pick WHICH division first, then WHICH stage of it. ============ -->
+	<TournamentFilterStrip {events} eventId={activeEvent?.id ?? null} card onchange={(next) => apply(next)} />
 
-<!-- ============ VIEWS ============ -->
-<!-- vt-content: one region, cross-faded as a whole on division/view change
-     (layout.css) — not per-row, per-card. Table values and group cards are
-     data the user is reading; only the swap between two different divisions'
-     data dissolves, not the numbers themselves. -->
-<div class="vt-content">
-	{#if !data.eventId}
-		<EmptyState title="No divisions published" message="Published divisions will appear here." />
-	{:else if data.format === 'round_robin'}
-		<Standings standings={standings ?? []} />
-	{:else if view === 'group'}
+	<!-- ============ VIEW SWITCHER (centered pill) — both phases always shown;
+	     the one this division lacks is disabled. Hidden only for round-robin
+	     (no phases at all). ============ -->
+	{#if data.format !== 'round_robin'}
+		<div class="mb-8 flex justify-center">
+			<SegmentedControl
+				options={viewTabs.map((t) => ({ value: t.v, label: t.l, disabled: t.disabled }))}
+				value={view}
+				onchange={(v) => apply({ view: v as View })}
+			/>
+		</div>
+	{/if}
+
+	<!-- ============ VIEWS ============ -->
+	<!-- vt-content: one region, cross-faded as a whole on division/view change
+	     (layout.css) — not per-row, per-card. Table values and group cards are
+	     data the user is reading; only the swap between two different divisions'
+	     data dissolves, not the numbers themselves. -->
+	<div class="vt-content">
+		{#if !data.eventId}
+			<EmptyState title="No divisions published" message="Published divisions will appear here." />
+		{:else if data.format === 'round_robin'}
+			<Standings standings={standings ?? []} />
+		{:else if view === 'group'}
 		{#if groupKnockout && groupKnockout.groups.length > 0}
 			<div class="grid gap-5 md:grid-cols-2">
 				{#each groupKnockout.groups as group (group.id)}
@@ -311,3 +350,4 @@
 		<EmptyState title="Draw not published yet" message="The bracket appears once the organizer generates the draw." />
 	{/if}
 </div>
+{/if}

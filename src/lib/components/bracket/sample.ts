@@ -63,11 +63,11 @@ function mkMatch(
 		sets:
 			status === 'completed'
 				? [
-						{ set_number: 1, p1_games: 6, p2_games: 3 },
-						{ set_number: 2, p1_games: 6, p2_games: 4 }
+						{ set_number: 1, games_a: 6, games_b: 3 },
+						{ set_number: 2, games_a: 6, games_b: 4 }
 					]
 				: status === 'live'
-					? [{ set_number: 1, p1_games: 4, p2_games: 5 }]
+					? [{ set_number: 1, games_a: 4, games_b: 5 }]
 					: []
 	};
 }

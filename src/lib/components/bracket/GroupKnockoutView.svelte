@@ -4,11 +4,17 @@
 	import PagedKnockoutBracket from './PagedKnockoutBracket.svelte';
 	import { adaptBracketRounds } from '$lib/utils/bracket-adapter';
 
-	let { data, matchHref }: { data: GroupKnockout; matchHref?: (id: string) => string } = $props();
+	let {
+		data,
+		matchHref,
+		timezone
+	}: { data: GroupKnockout; matchHref?: (id: string) => string; timezone?: string } = $props();
 
 	// data.knockout is already a real elimination tree (same shape used on the
-	// public bracket page's knockout view) — adapt it directly.
-	const adaptedKnockoutRounds = $derived(adaptBracketRounds(data.knockout));
+	// public bracket page's knockout view) — adapt it directly. timezone is the
+	// tournament's IANA zone for match date/time labels; callers without it
+	// (organizer draw preview) fall back to the platform default.
+	const adaptedKnockoutRounds = $derived(adaptBracketRounds(data.knockout, timezone));
 	const hasKnockout = $derived(data.knockout.some((r) => r.matches.length > 0));
 </script>
 

@@ -76,11 +76,20 @@ export function addManualMatch(
 	eventId: string,
 	team_a_id: string,
 	team_b_id: string,
-	opts?: RequestOptions
+	opts?: RequestOptions & { allowRematch?: boolean }
 ) {
 	return apiPost<{ id: string; match_no: number }>(
 		`/events/${eventId}/matches`,
-		{ team_a_id, team_b_id },
+		{ team_a_id, team_b_id, allow_rematch: opts?.allowRematch ?? false },
+		opts
+	);
+}
+
+/** Idempotently create every missing round-robin pairing (existing kept). */
+export function generateFixtures(eventId: string, opts?: RequestOptions) {
+	return apiPost<{ created: number; existing: number }>(
+		`/events/${eventId}/matches/generate`,
+		{},
 		opts
 	);
 }
@@ -117,6 +126,8 @@ export interface BracketSlot {
 export interface BracketSet {
 	p1: number;
 	p2: number;
+	tb1?: number | null;
+	tb2?: number | null;
 }
 export interface BracketMatch {
 	id: string;

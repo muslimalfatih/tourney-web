@@ -3,6 +3,7 @@
 	import type { EventBracket } from '$lib/api/endpoints/events';
 	import { enhance } from '$app/forms';
 	import { toastEnhance } from '$lib/utils/toast';
+	import { classifyPairing } from '$lib/utils/fixtures';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
@@ -21,14 +22,17 @@
 	} = $props();
 
 	// Existing fixtures come back as a single round for round-robin (no next
-	// pointer). Flatten to a list with both side names + status.
+	// pointer). Flatten to a list with both side names + ids + status; the ids
+	// feed the duplicate pre-check.
 	const fixtures = $derived(
 		bracket.rounds.flatMap((r) => r.matches).map((m) => ({
 			id: m.id,
 			match_no: m.match_no,
 			status: m.status,
 			a: m.participants.find((p) => p.slot === 1)?.display_name ?? 'TBD',
-			b: m.participants.find((p) => p.slot === 2)?.display_name ?? 'TBD'
+			b: m.participants.find((p) => p.slot === 2)?.display_name ?? 'TBD',
+			a_id: m.participants.find((p) => p.slot === 1)?.participant_id ?? null,
+			b_id: m.participants.find((p) => p.slot === 2)?.participant_id ?? null
 		}))
 	);
 
@@ -43,9 +47,18 @@
 
 	const canAdd = $derived(teamA !== '' && teamB !== '' && teamA !== teamB);
 	let adding = $state(false);
+	let generating = $state(false);
 	let addForm = $state<HTMLFormElement>();
 
-	function submitAdd() {
+	// Duplicate pre-check (mirrors the server table; server stays
+	// authoritative and 409s on stale data). 'blocked' disables Add outright;
+	// 'rematch' swaps Add for an explicit confirmation that is the ONLY path
+	// sending allow_rematch=true.
+	const verdict = $derived(canAdd ? classifyPairing(fixtures, teamA, teamB) : { kind: 'ok' as const });
+	let allowRematch = $state(false);
+
+	function submitAdd(asRematch = false) {
+		allowRematch = asRematch;
 		addForm?.requestSubmit();
 	}
 
@@ -81,15 +94,19 @@
 					success: 'Fixture added',
 					error: 'Could not add the fixture.',
 					before: () => (adding = true),
-					settle: () => {
-						adding = false;
+					onSuccess: () => {
 						teamA = '';
 						teamB = '';
+					},
+					settle: () => {
+						adding = false;
+						allowRematch = false;
 					}
 				})}
 			>
 				<input type="hidden" name="team_a_id" value={teamA} />
 				<input type="hidden" name="team_b_id" value={teamB} />
+				<input type="hidden" name="allow_rematch" value={allowRematch ? 'true' : 'false'} />
 				<div class="min-w-[10rem] flex-1">
 					<Select value={teamA} {items} placeholder="Select {entryNoun}" onValueChange={(v) => (teamA = v)} />
 				</div>
@@ -97,19 +114,57 @@
 				<div class="min-w-[10rem] flex-1">
 					<Select value={teamB} items={itemsB} placeholder="Select {entryNoun}" onValueChange={(v) => (teamB = v)} />
 				</div>
-				<Button type="button" onclick={submitAdd} disabled={!canAdd || adding}>
+				<Button type="button" onclick={() => submitAdd(false)} disabled={!canAdd || adding || verdict.kind !== 'ok'}>
 					<Plus class="size-4" /> Add
 				</Button>
 			</form>
+			{#if verdict.kind === 'blocked'}
+				<p class="mt-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-[13px] text-danger">
+					These {entryNoun}s already have an unplayed fixture (Match {verdict.existing.match_no}
+					· {verdict.existing.status}). Remove or play it first.
+				</p>
+			{:else if verdict.kind === 'rematch'}
+				<div class="mt-3 rounded-md border border-accent/30 bg-accent/10 px-3 py-2 text-[13px] text-accent">
+					<p>
+						These {entryNoun}s already played (Match {verdict.existing.match_no}
+						· {verdict.existing.status}). Create a rematch?
+					</p>
+					<Button class="mt-2" onclick={() => submitAdd(true)} disabled={adding}>
+						Create rematch
+					</Button>
+				</div>
+			{/if}
 		</Card>
 
 		<!-- Existing fixtures -->
 		<Card padded={false}>
-			<div class="border-b border-border px-5 py-4">
-				<h3 class="font-display text-[13px] uppercase tracking-[0.08em] text-primary">
-					Fixtures · {fixtures.length}
-				</h3>
-				<p class="text-xs text-muted">Remove a fixture only before it has been played.</p>
+			<div class="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
+				<div>
+					<h3 class="font-display text-[13px] uppercase tracking-[0.08em] text-primary">
+						Fixtures · {fixtures.length}
+					</h3>
+					<p class="text-xs text-muted">Remove a fixture only before it has been played.</p>
+				</div>
+				<!-- Idempotent everyone-plays-everyone generation: existing fixtures
+				     are kept, only missing pairings are created, so repeated clicks
+				     never duplicate. -->
+				<form
+					method="POST"
+					action="?/generateFixtures"
+					use:enhance={toastEnhance({
+						success: 'Missing fixtures generated',
+						error: 'Could not generate fixtures.',
+						before: () => {
+							if (generating) return false;
+							generating = true;
+						},
+						settle: () => (generating = false)
+					})}
+				>
+					<Button type="submit" variant="ghost" disabled={generating}>
+						Generate all fixtures
+					</Button>
+				</form>
 			</div>
 			{#if fixtures.length === 0}
 				<p class="px-5 py-8 text-center text-sm text-muted">No fixtures yet. Add one above.</p>

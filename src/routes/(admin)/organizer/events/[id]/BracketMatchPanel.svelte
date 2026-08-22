@@ -32,12 +32,15 @@
 	// Both sides must hold a real participant before a match can be scored.
 	const playable = $derived(!!slot(1)?.participant_id && !!slot(2)?.participant_id);
 	const isCompleted = $derived(match?.status === 'completed');
+	// Special-ending controls (walkover / retired / cancelled).
+	let ending = $state('');
+	let winnerSlot = $state('');
 
 	const tone = (s: string) =>
 		s === 'completed' ? 'published' : s === 'live' ? 'gold' : s === 'bye' ? 'archived' : 'draft';
 
 	// Score set rows, seeded from any existing sets when the panel opens.
-	let sets = $state<{ p1: string; p2: string }[]>([]);
+	let sets = $state<{ p1: string; p2: string; tb1: string; tb2: string }[]>([]);
 	let court = $state('');
 	let startsAt = $state('');
 	let submitting = $state(false);
@@ -55,8 +58,13 @@
 		if (match && seedKey !== seededFor) {
 			sets =
 				match.sets?.length > 0
-					? match.sets.map((s) => ({ p1: String(s.p1), p2: String(s.p2) }))
-					: [{ p1: '', p2: '' }];
+					? match.sets.map((s) => ({
+							p1: String(s.p1),
+							p2: String(s.p2),
+							tb1: s.tb1 != null ? String(s.tb1) : '',
+							tb2: s.tb2 != null ? String(s.tb2) : ''
+						}))
+					: [{ p1: '', p2: '', tb1: '', tb2: '' }];
 			// Seed court + start from the persisted match so the panel shows what's
 			// already scheduled instead of blank.
 			court = match.court_id ?? '';
@@ -66,7 +74,7 @@
 	});
 
 	function addSet() {
-		sets = [...sets, { p1: '', p2: '' }];
+		sets = [...sets, { p1: '', p2: '', tb1: '', tb2: '' }];
 	}
 	function removeSet(i: number) {
 		sets = sets.filter((_, idx) => idx !== i);
@@ -142,7 +150,12 @@
 					method="POST"
 					action="?/score"
 					use:enhance={toastEnhance({
-						success: (fd) => (fd.get('complete') === 'true' ? 'Match completed' : 'Score saved'),
+						success: (fd) =>
+							fd.get('completion') === 'normal'
+								? 'Match completed'
+								: fd.get('completion') === 'incomplete'
+									? 'Score saved'
+									: 'Result recorded',
 						error: 'Could not save the score.',
 						before: () => {
 							submitting = true;
@@ -163,26 +176,48 @@
 						{/if}
 					</div>
 					<input type="hidden" name="matchId" value={match.id} />
-					<div class="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-[13px]">
+					<div class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 text-[13px]">
 						<span></span>
 						<span class="w-14 text-center text-[10px] font-bold uppercase text-muted">{name(1)}</span>
 						<span class="w-14 text-center text-[10px] font-bold uppercase text-muted">{name(2)}</span>
+						<span class="text-center text-[10px] font-bold uppercase text-muted">TB</span>
 						{#each sets as s, i (i)}
 							<span class="text-muted">Set {i + 1}</span>
 							<input
-								name="p1_games"
+								name="games_a"
 								type="number"
 								min="0"
 								bind:value={s.p1}
 								class="{inputClass} w-14 px-2 text-center"
 							/>
+							<input
+								name="games_b"
+								type="number"
+								min="0"
+								bind:value={s.p2}
+								class="{inputClass} w-14 px-2 text-center"
+							/>
 							<div class="flex items-center gap-1">
+								<!-- Tiebreak points, required by the API for a 7-6 set. Empty
+								     strings are dropped by the action, so untouched fields are
+								     simply "no tiebreak". -->
 								<input
-									name="p2_games"
+									name="tiebreak_a"
 									type="number"
 									min="0"
-									bind:value={s.p2}
-									class="{inputClass} w-14 px-2 text-center"
+									placeholder="–"
+									bind:value={s.tb1}
+									class="{inputClass} w-12 px-1 text-center"
+									aria-label="Set {i + 1} tiebreak, {name(1)}"
+								/>
+								<input
+									name="tiebreak_b"
+									type="number"
+									min="0"
+									placeholder="–"
+									bind:value={s.tb2}
+									class="{inputClass} w-12 px-1 text-center"
+									aria-label="Set {i + 1} tiebreak, {name(2)}"
 								/>
 								{#if sets.length > 1}
 									<button
@@ -195,6 +230,27 @@
 							</div>
 						{/each}
 					</div>
+
+					<!-- Special endings: walkover records no play, retired keeps the
+					     partial score — both need the winner named explicitly. -->
+					<div class="flex flex-wrap items-center gap-3 text-[12px]">
+						<label class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted" for="ending-{match.id}">Ending</label>
+						<select id="ending-{match.id}" name="ending" bind:value={ending} class="{inputClass} w-auto px-2 py-1">
+							<option value="">Played result</option>
+							<option value="walkover">Walkover</option>
+							<option value="retired">Retired</option>
+							<option value="cancelled">Cancelled</option>
+						</select>
+						{#if ending === 'walkover' || ending === 'retired'}
+							<span class="text-muted">Winner:</span>
+							<label class="flex items-center gap-1"
+								><input type="radio" name="winner_slot" value="1" bind:group={winnerSlot} /> {name(1)}</label
+							>
+							<label class="flex items-center gap-1"
+								><input type="radio" name="winner_slot" value="2" bind:group={winnerSlot} /> {name(2)}</label
+							>
+						{/if}
+					</div>
 					<button
 						type="button"
 						onclick={addSet}
@@ -202,12 +258,23 @@
 						>+ Add set</button
 					>
 					<div class="flex justify-end gap-2">
-						<Button type="submit" name="complete" value="false" variant="subtle" disabled={submitting}>
-							Save progress
-						</Button>
-						<Button type="submit" name="complete" value="true" disabled={submitting}>
-							{submitting ? 'Saving…' : isCompleted ? 'Update result' : 'Complete match'}
-						</Button>
+						{#if ending === ''}
+							<Button type="submit" name="completion" value="incomplete" variant="subtle" disabled={submitting}>
+								Save progress
+							</Button>
+							<Button type="submit" name="completion" value="normal" disabled={submitting}>
+								{submitting ? 'Saving…' : isCompleted ? 'Update result' : 'Complete match'}
+							</Button>
+						{:else}
+							<Button
+								type="submit"
+								name="completion"
+								value={ending}
+								disabled={submitting || ((ending === 'walkover' || ending === 'retired') && !winnerSlot)}
+							>
+								{submitting ? 'Saving…' : 'Record ' + ending}
+							</Button>
+						{/if}
 					</div>
 				</form>
 			{:else}

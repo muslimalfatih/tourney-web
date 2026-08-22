@@ -7,6 +7,7 @@ import {
 	updateGroupAdvance,
 	buildBracket,
 	addManualMatch,
+	generateFixtures,
 	deleteManualMatch,
 	setGroups,
 	updateEvent,
@@ -23,7 +24,7 @@ import {
 	renameParticipant
 } from '$lib/api/endpoints/participants';
 import { listCourts, createSlot } from '$lib/api/endpoints/schedule';
-import { submitScore, setMatchStatus, type SetScore } from '$lib/api/endpoints/matches';
+import { submitScore, setMatchStatus, type SetScore, type Completion } from '$lib/api/endpoints/matches';
 import { ApiError } from '$lib/api/client';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
@@ -156,7 +157,10 @@ export const actions: Actions = {
 		}
 	},
 
-	// Round-robin: add / remove a single fixture (manual setup).
+	// Round-robin: add / remove a single fixture (manual setup). A 409
+	// duplicate_fixture comes back structured so the builder can show the
+	// existing match and — for a decided prior fixture — offer the explicit
+	// rematch confirmation (only that path resubmits allow_rematch=true).
 	addManualMatch: async ({ params, request, locals, fetch }) => {
 		const form = await request.formData();
 		const a = String(form.get('team_a_id') ?? '');
@@ -164,10 +168,43 @@ export const actions: Actions = {
 		if (!a || !b) return fail(400, { error: 'Pick both teams.' });
 		if (a === b) return fail(400, { error: 'A match needs two different teams.' });
 		try {
-			await addManualMatch(params.id, a, b, { fetch, token: locals.session.accessToken });
+			await addManualMatch(params.id, a, b, {
+				fetch,
+				token: locals.session.accessToken,
+				allowRematch: form.get('allow_rematch') === 'true'
+			});
 			return { fixtureAdded: true };
 		} catch (e) {
+			if (e instanceof ApiError && e.code === 'duplicate_fixture') {
+				const d = (e.details ?? {}) as {
+					match_no?: number;
+					status?: string;
+					rematchable?: boolean;
+				};
+				return fail(409, {
+					error: e.message,
+					duplicate: {
+						match_no: d.match_no ?? 0,
+						status: d.status ?? '',
+						rematchable: d.rematchable ?? false,
+						team_a_id: a,
+						team_b_id: b
+					}
+				});
+			}
 			return fail(500, { error: e instanceof ApiError ? e.message : 'Could not add the fixture.' });
+		}
+	},
+
+	// Round-robin: idempotently create every missing pairing.
+	generateFixtures: async ({ params, locals, fetch }) => {
+		try {
+			const res = await generateFixtures(params.id, { fetch, token: locals.session.accessToken });
+			return { generated: res };
+		} catch (e) {
+			return fail(500, {
+				error: e instanceof ApiError ? e.message : 'Could not generate fixtures.'
+			});
 		}
 	},
 
@@ -228,18 +265,35 @@ export const actions: Actions = {
 	},
 
 	// score saves set games for a match; complete=true finalizes and advances the
-	// winner. Set games arrive as parallel p1_games / p2_games arrays.
+	// winner. Set games arrive as parallel games_a / games_b arrays.
 	score: async ({ request, locals, fetch }) => {
 		const form = await request.formData();
 		const matchId = String(form.get('matchId') ?? '');
-		const p1 = form.getAll('p1_games').map((v) => Number(v));
-		const p2 = form.getAll('p2_games').map((v) => Number(v));
-		const complete = form.get('complete') === 'true';
-		const sets: SetScore[] = p1
-			.map((g, i) => ({ set_number: i + 1, p1_games: g, p2_games: p2[i] ?? 0 }))
-			.filter((s) => Number.isFinite(s.p1_games) && Number.isFinite(s.p2_games));
+		const a = form.getAll('games_a').map((v) => Number(v));
+		const b = form.getAll('games_b').map((v) => Number(v));
+		const tba = form.getAll('tiebreak_a').map((v) => String(v));
+		const tbb = form.getAll('tiebreak_b').map((v) => String(v));
+		const completion = String(form.get('completion') ?? 'incomplete') as Completion;
+		const winnerSlot = Number(form.get('winner_slot') ?? 0);
+		// Walkovers record no sets; otherwise pair up the parallel arrays and
+		// attach tiebreak metadata only where the organizer entered it.
+		const sets: SetScore[] =
+			completion === 'walkover'
+				? []
+				: a
+						.map((g, i) => {
+							const set: SetScore = { set_number: i + 1, games_a: g, games_b: b[i] ?? 0 };
+							if (tba[i]) set.tiebreak_a = Number(tba[i]);
+							if (tbb[i]) set.tiebreak_b = Number(tbb[i]);
+							return set;
+						})
+						.filter((s) => Number.isFinite(s.games_a) && Number.isFinite(s.games_b));
 		try {
-			await submitScore(matchId, { sets, complete }, { fetch, token: locals.session.accessToken });
+			await submitScore(
+				matchId,
+				winnerSlot ? { sets, completion, winner_slot: winnerSlot } : { sets, completion },
+				{ fetch, token: locals.session.accessToken }
+			);
 			return { scored: true };
 		} catch (e) {
 			return fail(500, { error: e instanceof ApiError ? e.message : 'Could not save the score.' });

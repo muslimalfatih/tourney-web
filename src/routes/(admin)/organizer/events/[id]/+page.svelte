@@ -58,7 +58,9 @@
 	// flatMap over it). round_robin/group_knockout keep BurgundyBracket here,
 	// unchanged from before.
 	const isSingleElim = $derived(data.event.format === 'single_elim');
-	const bracketRounds = $derived(isSingleElim ? adaptEventBracket(data.bracket) : []);
+	const bracketRounds = $derived(
+		isSingleElim ? adaptEventBracket(data.bracket, data.tournament.timezone) : []
+	);
 
 	// Fixed category set (skill levels), matching the tournament page's create flow.
 	// An existing off-list value is preserved as an extra option so saving Public

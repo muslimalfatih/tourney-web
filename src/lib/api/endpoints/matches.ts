@@ -2,11 +2,16 @@ import { apiGet, apiPatch, type RequestOptions } from '$lib/api/client';
 
 export interface SetScore {
 	set_number: number;
-	p1_games: number;
-	p2_games: number;
-	p1_tiebreak?: number | null;
-	p2_tiebreak?: number | null;
+	games_a: number;
+	games_b: number;
+	// Tiebreak metadata is separate from games: a 7-6 set requires the
+	// tiebreak points here (winner >= 7, leading by two).
+	tiebreak_a?: number | null;
+	tiebreak_b?: number | null;
 }
+
+/** How a result ended. `walkover`/`retired` require winner_slot. */
+export type Completion = 'incomplete' | 'normal' | 'walkover' | 'retired' | 'cancelled';
 
 export interface MatchSlot {
 	slot: number;
@@ -40,7 +45,7 @@ export function getMatch(id: string, opts?: RequestOptions) {
 
 export function submitScore(
 	id: string,
-	body: { sets: SetScore[]; complete: boolean },
+	body: { sets: SetScore[]; completion: Completion; winner_slot?: number },
 	opts?: RequestOptions
 ) {
 	return apiPatch<MatchDetail>(`/matches/${id}/score`, body, opts);
@@ -48,7 +53,8 @@ export function submitScore(
 
 export function setMatchStatus(
 	id: string,
-	status: 'scheduled' | 'live' | 'completed',
+	// 'completed' is not settable here — decided results go through submitScore.
+	status: 'scheduled' | 'live',
 	opts?: RequestOptions
 ) {
 	return apiPatch<MatchDetail>(`/matches/${id}/status`, { status }, opts);

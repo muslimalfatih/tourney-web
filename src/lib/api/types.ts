@@ -28,6 +28,8 @@ export interface Tournament {
 	location?: string | null;
 	starts_on?: string | null;
 	ends_on?: string | null;
+	/** IANA presentation zone (default Asia/Makassar); all timestamps stay UTC. */
+	timezone: string;
 	published_at?: string | null;
 	event_count?: number;
 }
@@ -72,10 +74,10 @@ export type MatchStatus =
 
 export interface SetScore {
 	set_number: number;
-	p1_games: number;
-	p2_games: number;
-	p1_tiebreak?: number | null;
-	p2_tiebreak?: number | null;
+	games_a: number;
+	games_b: number;
+	tiebreak_a?: number | null;
+	tiebreak_b?: number | null;
 }
 
 export interface MatchParticipant {

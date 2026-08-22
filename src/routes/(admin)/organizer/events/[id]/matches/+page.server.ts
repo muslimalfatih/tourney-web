@@ -1,7 +1,7 @@
 import type { Actions, PageServerLoad } from './$types';
 import { error, fail } from '@sveltejs/kit';
 import { getEvent } from '$lib/api/endpoints/events';
-import { listEventMatches, submitScore, setMatchStatus } from '$lib/api/endpoints/matches';
+import { listEventMatches, submitScore, setMatchStatus, type Completion } from '$lib/api/endpoints/matches';
 import { ApiError } from '$lib/api/client';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
@@ -24,18 +24,23 @@ export const actions: Actions = {
 	score: async ({ request, locals, fetch }) => {
 		const form = await request.formData();
 		const matchId = String(form.get('matchId') ?? '');
-		const complete = form.get('complete') === 'true';
+		const completion = String(form.get('completion') ?? 'incomplete') as Completion;
 
-		const p1 = form.getAll('p1_games').map((v) => Number(v));
-		const p2 = form.getAll('p2_games').map((v) => Number(v));
+		const p1 = form.getAll('games_a').map((v) => Number(v));
+		const p2 = form.getAll('games_b').map((v) => Number(v));
+		const winnerSlot = 0; // special endings are entered from the Bracket tab panel
 		const sets = p1
-			.map((g, i) => ({ set_number: i + 1, p1_games: g, p2_games: p2[i] ?? 0 }))
-			.filter((s) => Number.isFinite(s.p1_games) && Number.isFinite(s.p2_games));
+			.map((g, i) => ({ set_number: i + 1, games_a: g, games_b: p2[i] ?? 0 }))
+			.filter((s) => Number.isFinite(s.games_a) && Number.isFinite(s.games_b));
 
 		if (sets.length === 0) return fail(400, { error: 'Enter at least one set.' });
 
 		try {
-			await submitScore(matchId, { sets, complete }, { fetch, token: locals.session.accessToken });
+			await submitScore(
+				matchId,
+				winnerSlot ? { sets, completion, winner_slot: winnerSlot } : { sets, completion },
+				{ fetch, token: locals.session.accessToken }
+			);
 			return { scored: true };
 		} catch (e) {
 			return fail(

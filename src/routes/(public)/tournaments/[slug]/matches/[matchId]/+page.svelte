@@ -70,7 +70,7 @@
 			<span class="flex shrink-0 items-center gap-2 font-display text-[15px] tabular-nums">
 				{#each match.sets ?? [] as s (s.set_number)}
 					<span class={isWinner(n) ? 'text-accent' : 'text-muted'}>
-						{n === 1 ? s.p1_games : s.p2_games}
+						{n === 1 ? s.games_a : s.games_b}
 					</span>
 				{/each}
 			</span>

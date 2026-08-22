@@ -8,6 +8,7 @@
 // adapter — see the organizer event page's `matchById`/`openMatch`).
 import type { BracketMatch, BracketRound, BracketSlot, EventBracket } from '$lib/api/endpoints/events';
 import type { Match, MatchSide, MatchStatus, Round } from '$lib/types/bracket';
+import { DEFAULT_TIMEZONE, zonedShortDate, zonedTime } from '$lib/utils/tz';
 
 // laga-api's match_status enum (generated/types.ts) → the new system's
 // display-oriented MatchStatus. 'completed' is the only renamed value; every
@@ -51,24 +52,21 @@ function toWinner(match: BracketMatch, home: MatchSide, away: MatchSide): 'home'
 	return null; // winner id doesn't match either resolved slot — leave unmarked rather than guess
 }
 
-const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
-const timeFmt = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-
-function toLabels(scheduledAt: string | null): { dateLabel: string; timeLabel: string | null } {
+function toLabels(scheduledAt: string | null, tz: string): { dateLabel: string; timeLabel: string | null } {
 	if (!scheduledAt) return { dateLabel: 'TBD', timeLabel: null };
-	const d = new Date(scheduledAt);
-	if (Number.isNaN(d.getTime())) return { dateLabel: 'TBD', timeLabel: null };
-	return { dateLabel: dateFmt.format(d), timeLabel: timeFmt.format(d) };
+	const dateLabel = zonedShortDate(scheduledAt, tz);
+	if (!dateLabel) return { dateLabel: 'TBD', timeLabel: null };
+	return { dateLabel, timeLabel: zonedTime(scheduledAt, tz) };
 }
 
-function toMatch(bm: BracketMatch): Match {
+function toMatch(bm: BracketMatch, tz: string): Match {
 	const slot1 = bm.participants.find((p) => p.slot === 1);
 	const slot2 = bm.participants.find((p) => p.slot === 2);
 	const home = toSide(slot1, bm.winner_participant_id);
 	const away = toSide(slot2, bm.winner_participant_id);
 	home.scoreLine = scoreLine(bm, 1);
 	away.scoreLine = scoreLine(bm, 2);
-	const { dateLabel, timeLabel } = toLabels(bm.scheduled_at);
+	const { dateLabel, timeLabel } = toLabels(bm.scheduled_at, tz);
 
 	return {
 		id: bm.id,
@@ -82,11 +80,11 @@ function toMatch(bm: BracketMatch): Match {
 	};
 }
 
-function toRound(br: BracketRound): Round {
+function toRound(br: BracketRound, tz: string): Round {
 	return {
 		id: String(br.round_number),
 		name: br.name,
-		matches: br.matches.map(toMatch)
+		matches: br.matches.map((m) => toMatch(m, tz))
 	};
 }
 
@@ -107,14 +105,14 @@ function toRound(br: BracketRound): Round {
  * (which would report it as a validation error, not a normal "not generated
  * yet" state).
  */
-export function adaptBracketRounds(rounds: BracketRound[]): Round[] {
-	const mapped = rounds.map(toRound);
+export function adaptBracketRounds(rounds: BracketRound[], tz: string = DEFAULT_TIMEZONE): Round[] {
+	const mapped = rounds.map((r) => toRound(r, tz));
 	let end = mapped.length;
 	while (end > 0 && mapped[end - 1].matches.length === 0) end--;
 	return mapped.slice(0, end);
 }
 
 /** Convenience wrapper for the common case of adapting a whole EventBracket. */
-export function adaptEventBracket(bracket: EventBracket): Round[] {
-	return adaptBracketRounds(bracket.rounds);
+export function adaptEventBracket(bracket: EventBracket, tz: string = DEFAULT_TIMEZONE): Round[] {
+	return adaptBracketRounds(bracket.rounds, tz);
 }

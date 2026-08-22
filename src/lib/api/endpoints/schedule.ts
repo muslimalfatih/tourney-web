@@ -12,6 +12,13 @@ export interface ScheduleSlot {
 	court_name: string;
 	match_id: string | null;
 	match_label: string | null;
+	// Nullable together with match_id/match_label — a "held" slot (court
+	// blocked, nothing assigned yet) has none of these. event_name is the
+	// division's public_display_name, already resolved server-side, so a
+	// multi-division schedule can show which division each row belongs to.
+	event_id: string | null;
+	event_name: string | null;
+	match_status: 'scheduled' | 'live' | 'completed' | null;
 	starts_at: string;
 	ends_at: string;
 }
@@ -36,12 +43,26 @@ export function listPublicSchedule(slug: string, opts?: RequestOptions) {
 	return apiGet<ScheduleSlot[]>(`/public/tournaments/${slug}/schedule`, opts);
 }
 
+/** One existing slot that clashes with a requested write (422 details). */
+export interface ScheduleConflict {
+	type: 'court_overlap' | 'participant_overlap' | 'rest_buffer';
+	slot_id: string;
+	court_id: string;
+	court_name: string;
+	match_id?: string | null;
+	match_label?: string | null;
+	starts_at: string;
+	ends_at: string;
+}
+
 export interface CreateSlotInput {
 	tournament_id: string;
 	court_id: string;
 	match_id?: string | null;
 	starts_at: string;
 	ends_at: string;
+	/** Acknowledge rest_buffer warnings from a prior 422 and schedule anyway. */
+	override_rest_buffer?: boolean;
 }
 
 export function createSlot(input: CreateSlotInput, opts?: RequestOptions) {
@@ -53,6 +74,7 @@ export interface UpdateSlotInput {
 	match_id?: string | null;
 	starts_at: string;
 	ends_at: string;
+	override_rest_buffer?: boolean;
 }
 
 export function updateSlot(id: string, input: UpdateSlotInput, opts?: RequestOptions) {

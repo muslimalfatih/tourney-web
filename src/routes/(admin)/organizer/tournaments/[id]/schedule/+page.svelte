@@ -13,6 +13,7 @@
 	import RowMenuItem from '$lib/components/ui/RowMenuItem.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
 	import { inputClass } from '$lib/utils/ui';
+	import { zonedDayLabel, zonedTime } from '$lib/utils/tz';
 	import { Plus, Clock } from '@lucide/svelte';
 
 	type MatchOpt = { id: string; label: string; scheduled: boolean; playable: boolean };
@@ -21,7 +22,7 @@
 		form
 	}: {
 		data: { tournament: Tournament; courts: Court[]; schedule: ScheduleSlot[]; matches: MatchOpt[] };
-		form?: { error?: string };
+		form?: { error?: string; restWarning?: string };
 	} = $props();
 
 	let courtOpen = $state(false);
@@ -73,11 +74,11 @@
 		slotOpen = true;
 	}
 
+	// All schedule times render in the TOURNAMENT's timezone, not the browser's,
+	// so the organizer sees the same wall-clock the venue and public site do.
+	const tz = $derived(data.tournament.timezone);
 	function fmtTime(iso: string): string {
-		return new Date(iso).toLocaleTimeString('en-GB', {
-			hour: '2-digit',
-			minute: '2-digit'
-		});
+		return zonedTime(iso, tz);
 	}
 	function removeSlot(id: string) {
 		slotId = id;
@@ -89,11 +90,7 @@
 	const days = $derived.by(() => {
 		const map = new Map<string, ScheduleSlot[]>();
 		for (const s of data.schedule) {
-			const day = new Date(s.starts_at).toLocaleDateString('en-GB', {
-				weekday: 'long',
-				day: 'numeric',
-				month: 'long'
-			});
+			const day = zonedDayLabel(s.starts_at, tz);
 			if (!map.has(day)) map.set(day, []);
 			map.get(day)!.push(s);
 		}
@@ -214,6 +211,7 @@
 		<!-- bits-ui Select/DateTimePicker aren't native inputs: the Select emits its
 		     own hidden field via `name`; the picker's ISO goes through this one. -->
 		<input type="hidden" name="starts_at" value={slotStartsAt} />
+		<input type="hidden" name="tz" value={tz} />
 		{#if editingId}<input type="hidden" name="slotId" value={editingId} />{/if}
 		<Field label="Court">
 			<Select name="court_id" bind:value={slotCourt} items={courtItems} placeholder="Pick a court" />
@@ -224,6 +222,15 @@
 		<Field label="Start">
 			<DateTimePicker bind:value={slotStartsAt} />
 		</Field>
+		{#if form?.restWarning}
+			<div class="rounded-md border border-accent/30 bg-accent/10 px-3 py-2 text-[13px] text-accent">
+				<p>{form.restWarning}</p>
+				<label class="mt-2 flex items-center gap-2 font-bold">
+					<input type="checkbox" name="override_rest" class="accent-current" />
+					Schedule anyway
+				</label>
+			</div>
+		{/if}
 		<div class="mt-2 flex justify-end gap-2">
 			<Button type="button" variant="ghost" onclick={() => (slotOpen = false)}>Cancel</Button>
 			<Button type="submit" disabled={submitting || !slotCourt || !slotStartsAt}>

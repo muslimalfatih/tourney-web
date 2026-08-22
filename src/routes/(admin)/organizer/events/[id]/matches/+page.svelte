@@ -33,7 +33,7 @@
 	}
 	function scoreStr(m: MatchDetail, n: number): string {
 		if (!m.sets?.length) return '';
-		return m.sets.map((s) => (n === 1 ? s.p1_games : s.p2_games)).join(' ');
+		return m.sets.map((s) => (n === 1 ? s.games_a : s.games_b)).join(' ');
 	}
 	// A match is playable only when both slots have a participant.
 	function playable(m: MatchDetail): boolean {
@@ -47,7 +47,7 @@
 		active = m;
 		sets =
 			m.sets?.length > 0
-				? m.sets.map((s) => ({ p1: String(s.p1_games), p2: String(s.p2_games) }))
+				? m.sets.map((s) => ({ p1: String(s.games_a), p2: String(s.games_b) }))
 				: [{ p1: '', p2: '' }];
 		scoreOpen = true;
 	}
@@ -152,7 +152,7 @@
 			method="POST"
 			action="?/score"
 			use:enhance={toastEnhance({
-				success: (fd) => (fd.get('complete') === 'true' ? 'Match completed' : 'Score saved'),
+				success: (fd) => (fd.get('completion') === 'normal' ? 'Match completed' : 'Score saved'),
 				before: () => {
 					submitting = true;
 				},
@@ -178,7 +178,7 @@
 				{#each sets as s, i (i)}
 					<span class="text-muted">Set {i + 1}</span>
 					<input
-						name="p1_games"
+						name="games_a"
 						type="number"
 						min="0"
 						bind:value={s.p1}
@@ -186,7 +186,7 @@
 					/>
 					<div class="flex items-center gap-1">
 						<input
-							name="p2_games"
+							name="games_b"
 							type="number"
 							min="0"
 							bind:value={s.p2}
@@ -213,10 +213,10 @@
 
 			<div class="mt-2 flex justify-end gap-2">
 				<Button type="button" variant="ghost" onclick={() => (scoreOpen = false)}>Cancel</Button>
-				<Button type="submit" name="complete" value="false" variant="subtle" disabled={submitting}
+				<Button type="submit" name="completion" value="incomplete" variant="subtle" disabled={submitting}
 					>Save progress</Button
 				>
-				<Button type="submit" name="complete" value="true" disabled={submitting}
+				<Button type="submit" name="completion" value="normal" disabled={submitting}
 					>{submitting ? 'Saving…' : 'Complete match'}</Button
 				>
 			</div>
