@@ -74,7 +74,7 @@
 
 {#snippet picker()}
 	<div class="max-w-xs">
-		<span class="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+		<span class="mb-2 block text-[10px] font-mono font-medium uppercase tracking-[0.16em] text-muted">
 			Division
 		</span>
 		<Select value={eventId ?? ''} {items} onValueChange={handleChange} placeholder="Select a division" />

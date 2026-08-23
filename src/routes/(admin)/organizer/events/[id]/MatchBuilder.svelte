@@ -140,7 +140,7 @@
 			<!-- Unassigned teams -->
 			<Card padded={false} class="h-max">
 				<div class="border-b border-border px-4 py-3">
-					<h3 class="font-display text-[13px] uppercase tracking-[0.08em] text-primary">
+					<h3 class="font-mono font-medium text-[11px] uppercase tracking-[0.16em] text-primary">
 						Unassigned
 					</h3>
 					<p class="text-xs text-muted">
@@ -182,7 +182,7 @@
 			<div class="flex flex-col gap-3">
 				<div class="flex flex-wrap items-center justify-between gap-2">
 					<div>
-						<h3 class="font-display text-[13px] uppercase tracking-[0.08em] text-primary">
+						<h3 class="font-mono font-medium text-[11px] uppercase tracking-[0.16em] text-primary">
 							Round 1 · {roundOneCount} matches
 						</h3>
 						<p class="text-xs text-muted">Assign both sides, or leave a match empty to skip it.</p>
@@ -197,7 +197,7 @@
 						<Card padded={false}>
 							<div class="flex flex-wrap items-center gap-2 px-3 py-2.5">
 								<span
-									class="w-16 shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] text-muted"
+									class="w-16 shrink-0 text-[10px] font-mono font-medium uppercase tracking-[0.12em] text-muted"
 								>
 									Match {i + 1}
 								</span>
@@ -209,7 +209,7 @@
 										onValueChange={(v) => (row.a = v || null)}
 									/>
 								</div>
-								<span class="shrink-0 text-[10px] font-bold uppercase text-muted">vs</span>
+								<span class="shrink-0 text-[10px] font-mono font-medium uppercase text-muted">vs</span>
 								<div class="min-w-0 flex-1">
 									<Select
 										value={row.b ?? ''}

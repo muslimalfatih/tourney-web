@@ -66,17 +66,17 @@
 >
 
 <div class="mb-4 mt-3 flex items-center gap-3">
-	<h2 class="font-display text-lg uppercase tracking-[0.06em] text-primary">Match {match.match_no}</h2>
+	<h2 class="font-display text-xl tracking-[-0.01em] text-primary">Match {match.match_no}</h2>
 	<Tag tone={tone(match.status)}>{match.status}</Tag>
 	<button
 		type="button"
 		onclick={() => (shareOpen = true)}
-		class="ml-auto flex items-center gap-1.5 rounded-pill border border-border px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-primary"
+		class="ml-auto flex items-center gap-1.5 rounded-pill border border-border px-3 py-1.5 text-[11px] font-mono font-medium uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-primary"
 	>
 		<Share2 class="size-3.5" /> Share
 	</button>
 	{#if live?.connected && match.status === 'live'}
-		<span class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-gold">
+		<span class="flex items-center gap-1.5 text-[11px] font-mono font-medium uppercase tracking-[0.12em] text-gold">
 			<span class="size-1.5 animate-pulse rounded-full bg-gold"></span> Live
 		</span>
 	{/if}
@@ -91,7 +91,7 @@
 					isWinner(n) ? 'font-bold text-accent' : 'text-primary'
 				)}>{slot(n)?.display_name ?? 'TBD'}</span
 			>
-			<span class="flex shrink-0 items-center gap-2 font-display text-[15px] tabular-nums">
+			<span class="flex shrink-0 items-center gap-2 font-mono text-[15px] tabular-nums">
 				{#each match.sets ?? [] as s (s.set_number)}
 					<span class={isWinner(n) ? 'text-accent' : 'text-muted'}>
 						{n === 1 ? s.games_a : s.games_b}

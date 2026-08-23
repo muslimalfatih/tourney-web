@@ -22,7 +22,7 @@
 
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
 	<div>
-		<h1 class="font-display text-2xl uppercase tracking-[0.08em] text-primary">Organizers</h1>
+		<h1 class="font-display text-3xl tracking-[-0.01em] text-primary">Organizers</h1>
 		<p class="text-xs text-muted">{data.organizations.length} organization{data.organizations.length === 1 ? '' : 's'}</p>
 	</div>
 	<Button onclick={() => (createOpen = true)}><Plus class="size-4" /> Add organizer</Button>
@@ -41,7 +41,7 @@
 				<thead>
 					<tr class="border-b border-border text-left">
 						{#each ['Organization', 'Slug', 'Organizers', 'Tournaments', 'Status'] as h, hi (hi)}
-							<th class="px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">{h}</th>
+							<th class="px-5 py-2.5 text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted">{h}</th>
 						{/each}
 					</tr>
 				</thead>

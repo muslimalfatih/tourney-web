@@ -5,12 +5,12 @@ import type { User } from '$lib/api/types';
 /**
  * Server-side session management. Tokens live ONLY in httpOnly cookies so the
  * browser's JS can never read them (XSS-safe). Load functions and form actions
- * read the access token here and forward it to laga-api as a Bearer header;
+ * read the access token here and forward it to tourney-api as a Bearer header;
  * authorization itself is enforced by the API.
  */
 
-const ACCESS_COOKIE = 'laga_at';
-const REFRESH_COOKIE = 'laga_rt';
+const ACCESS_COOKIE = 'tourney_at';
+const REFRESH_COOKIE = 'tourney_rt';
 
 const baseCookieOpts = {
 	path: '/',

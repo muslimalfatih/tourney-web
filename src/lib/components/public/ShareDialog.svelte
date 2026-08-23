@@ -2,7 +2,7 @@
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { toast } from 'svelte-sonner';
-	import { qrSvg, qrPngDataUrl, whatsappHref, xHref } from '$lib/utils/share';
+	import { qrSvg, qrPngDataUrl, whatsappHref } from '$lib/utils/share';
 	import { Copy, Check, Share2, Download } from '@lucide/svelte';
 
 	// Reusable share dialog for public pages. `url` is the canonical public
@@ -55,18 +55,12 @@
 	function downloadPng() {
 		download(qrPngDataUrl(url), `${slugName}-qr.png`);
 	}
-	function downloadSvg() {
-		const blob = new Blob([svg], { type: 'image/svg+xml' });
-		const objectUrl = URL.createObjectURL(blob);
-		download(objectUrl, `${slugName}-qr.svg`);
-		setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
-	}
 </script>
 
 <Modal bind:open title="Share" description="Anyone with the link sees the live public view.">
 	<div class="flex flex-col items-center gap-5">
 		<!-- QR needs dark-on-light to scan; the white tile is deliberate. -->
-		<div class="w-44 rounded-lg bg-white p-3 shadow-(--shadow-soft)">
+		<div class="qr-tile w-44 rounded-lg bg-white p-3 shadow-(--shadow-soft)">
 			{@html svg}
 		</div>
 
@@ -86,6 +80,8 @@
 			</Button>
 		</div>
 
+		<!-- One action line: native share (where the platform has it),
+		     WhatsApp, and the QR as a PNG. Copy above stays the primary. -->
 		<div class="flex w-full flex-wrap justify-center gap-2">
 			{#if canNativeShare}
 				<Button variant="ghost" onclick={nativeShare}>
@@ -98,25 +94,18 @@
 			>
 				WhatsApp
 			</Button>
-			<Button variant="ghost" onclick={() => window.open(xHref(url, title), '_blank', 'noopener')}>
-				Post on X
-			</Button>
-		</div>
-
-		<div class="flex w-full justify-center gap-2 border-t border-border pt-4">
 			<Button variant="ghost" onclick={downloadPng}>
-				<Download class="size-4" /> QR as PNG
-			</Button>
-			<Button variant="ghost" onclick={downloadSvg}>
-				<Download class="size-4" /> QR as SVG
+				<Download class="size-4" /> Download QR
 			</Button>
 		</div>
 	</div>
 </Modal>
 
 <style>
-	/* The inline QR SVG fills its white tile. */
-	div :global(svg) {
+	/* The inline QR SVG fills its white tile — scoped to the tile ONLY. The
+	   earlier bare `div svg` selector also caught the lucide icons in the
+	   action buttons and blew them up to ~57px. */
+	.qr-tile :global(svg) {
 		display: block;
 		width: 100%;
 		height: auto;

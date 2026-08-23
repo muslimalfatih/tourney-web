@@ -55,7 +55,7 @@
 			disabled={opt.disabled}
 			onclick={() => onchange(opt.value)}
 			class={cn(
-				'relative z-10 cursor-pointer rounded-pill font-bold uppercase tracking-[0.08em] leading-none transition-colors duration-150 active:scale-[0.97] motion-reduce:active:scale-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100',
+				'relative z-10 cursor-pointer rounded-pill font-mono font-medium uppercase tracking-[0.08em] leading-none transition-colors duration-150 active:scale-[0.97] motion-reduce:active:scale-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100',
 				pad,
 				value === opt.value ? 'text-primary' : 'text-muted enabled:hover:text-primary'
 			)}>{opt.label}</button

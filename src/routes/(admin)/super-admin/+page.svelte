@@ -14,13 +14,13 @@
 	];
 </script>
 
-<h1 class="mb-1 font-display text-2xl uppercase tracking-[0.08em] text-primary">Platform overview</h1>
+<h1 class="mb-1 font-display text-3xl tracking-[-0.01em] text-primary">Platform overview</h1>
 <p class="mb-6 text-xs text-muted">Global view across all organizers and tournaments.</p>
 
 <div class="mb-8 grid gap-4 sm:grid-cols-3">
 	{#each [{ l: 'Organizations', n: data.stats.organizations }, { l: 'Tournaments', n: data.stats.tournaments }, { l: 'Published', n: data.stats.published }] as s (s.l)}
 		<Card>
-			<p class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">{s.l}</p>
+			<p class="text-[10px] font-mono font-medium uppercase tracking-[0.16em] text-muted">{s.l}</p>
 			<p class="mt-1 font-display text-3xl tabular-nums text-accent">{s.n}</p>
 		</Card>
 	{/each}

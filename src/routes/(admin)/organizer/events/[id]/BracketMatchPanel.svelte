@@ -127,7 +127,7 @@
 				})}
 				class="flex flex-col gap-3 border-t border-border pt-4"
 			>
-				<h4 class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Schedule</h4>
+				<h4 class="text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted">Schedule</h4>
 				<input type="hidden" name="tournament_id" value={tournamentId} />
 				<input type="hidden" name="tz" value={timezone} />
 				<input type="hidden" name="match_id" value={match.id} />
@@ -180,7 +180,7 @@
 					class="flex flex-col gap-3 border-t border-border pt-4"
 				>
 					<div class="flex items-center justify-between">
-						<h4 class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Score</h4>
+						<h4 class="text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted">Score</h4>
 						{#if isCompleted}
 							<span class="text-[11px] text-muted">Completed — edit to correct</span>
 						{/if}
@@ -188,9 +188,9 @@
 					<input type="hidden" name="matchId" value={match.id} />
 					<div class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 text-[13px]">
 						<span></span>
-						<span class="w-14 text-center text-[10px] font-bold uppercase text-muted">{name(1)}</span>
-						<span class="w-14 text-center text-[10px] font-bold uppercase text-muted">{name(2)}</span>
-						<span class="text-center text-[10px] font-bold uppercase text-muted">TB</span>
+						<span class="w-14 text-center text-[10px] font-mono font-medium uppercase text-muted">{name(1)}</span>
+						<span class="w-14 text-center text-[10px] font-mono font-medium uppercase text-muted">{name(2)}</span>
+						<span class="text-center text-[10px] font-mono font-medium uppercase text-muted">TB</span>
 						{#each sets as s, i (i)}
 							<span class="text-muted">Set {i + 1}</span>
 							<input
@@ -244,7 +244,7 @@
 					<!-- Special endings: walkover records no play, retired keeps the
 					     partial score — both need the winner named explicitly. -->
 					<div class="flex flex-wrap items-center gap-3 text-[12px]">
-						<label class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted" for="ending-{match.id}">Ending</label>
+						<label class="text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted" for="ending-{match.id}">Ending</label>
 						<select id="ending-{match.id}" name="ending" bind:value={ending} class="{inputClass} w-auto px-2 py-1">
 							<option value="">Played result</option>
 							<option value="walkover">Walkover</option>
@@ -264,7 +264,7 @@
 					<button
 						type="button"
 						onclick={addSet}
-						class="self-start text-[11px] font-bold uppercase tracking-[0.12em] text-accent hover:text-accent-hover"
+						class="self-start text-[11px] font-mono font-medium uppercase tracking-[0.12em] text-accent hover:text-accent-hover"
 						>+ Add set</button
 					>
 					<div class="flex justify-end gap-2">

@@ -3,7 +3,7 @@ import { browser } from '$app/environment';
 
 /**
  * Live update subscriber over SSE. Public pages create one of these for a
- * tournament slug; it opens an EventSource against laga-api's public stream and
+ * tournament slug; it opens an EventSource against tourney-api's public stream and
  * exposes the latest event reactively. EventSource auto-reconnects, so there is
  * no manual retry logic.
  *

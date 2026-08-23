@@ -10,7 +10,7 @@ import { SITE_BASE_URL } from '$lib/config/env';
 // client-rendered, so the served shell carries no tags a crawler can read.
 // For public tournament paths we ask the Go API for the tournament — the API
 // is the visibility authority, so drafts/hidden tournaments 404 and inject
-// NOTHING — and swap the tags in over the shell's <!-- laga:head --> marker.
+// NOTHING — and swap the tags in over the shell's <!-- tourney:head --> marker.
 // A tiny per-slug TTL cache keeps crawler bursts off the API.
 const metaCache = new Map<string, { tags: string | null; until: number }>();
 const META_TTL_MS = 60_000;
@@ -46,7 +46,7 @@ async function publicMetaTags(url: URL, fetchFn: typeof fetch): Promise<string |
 /**
  * On every request, resolve the session from the httpOnly cookie and attach it
  * to `event.locals`. Load functions read `locals.session` to gate admin routes
- * and to forward the access token to laga-api.
+ * and to forward the access token to tourney-api.
  *
  * The access token is short-lived (15 min). When it expires, we transparently
  * exchange the long-lived refresh cookie for a fresh pair and rotate the
@@ -91,7 +91,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 		const tags = await publicMetaTags(event.url, event.fetch);
 		if (tags) {
 			return resolve(event, {
-				transformPageChunk: ({ html }) => html.replace('<!-- laga:head -->', tags)
+				// Inject BEFORE the marker and keep it: removing a comment inside
+				// transformPageChunk can break Svelte's hydration offsets.
+				transformPageChunk: ({ html }) => html.replace('<!-- tourney:head -->', `${tags}\n\t\t<!-- tourney:head -->`)
 			});
 		}
 	}

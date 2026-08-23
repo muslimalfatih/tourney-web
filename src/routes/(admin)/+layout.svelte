@@ -34,7 +34,7 @@
 <div class="flex min-h-screen bg-page">
 	<aside class="hidden w-60 shrink-0 border-r border-border bg-surface md:block">
 		<div
-			class="flex items-center gap-2 px-5 py-4 font-display text-[15px] font-bold uppercase tracking-[0.14em] text-accent"
+			class="flex items-center gap-2 px-5 py-4 font-display italic text-[19px] tracking-[-0.01em] text-primary"
 		>
 			<BrandIcon class="size-5" />
 			tourney.social
@@ -61,7 +61,7 @@
 		<header
 			class="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-page/80 px-4 py-3 backdrop-blur-xl backdrop-saturate-150 supports-[not(backdrop-filter:blur(0px))]:bg-page"
 		>
-			<span class="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
+			<span class="text-[11px] font-mono font-medium uppercase tracking-[0.14em] text-muted">
 				{data.user.role === 'super_admin' ? 'Super Admin' : 'Organizer'}
 			</span>
 			<div class="flex items-center gap-3">

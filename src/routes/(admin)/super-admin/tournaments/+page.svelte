@@ -24,7 +24,7 @@
 </script>
 
 <div class="mb-6">
-	<h1 class="font-display text-2xl uppercase tracking-[0.08em] text-primary">All tournaments</h1>
+	<h1 class="font-display text-3xl tracking-[-0.01em] text-primary">All tournaments</h1>
 	<p class="text-xs text-muted">Every organizer's tournaments. Suspend or archive as needed.</p>
 </div>
 
@@ -37,7 +37,7 @@
 				<thead>
 					<tr class="border-b border-border text-left">
 						{#each ['Tournament', 'Organization', 'Status', ''] as h, hi (hi)}
-							<th class="px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">{h}</th>
+							<th class="px-5 py-2.5 text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted">{h}</th>
 						{/each}
 					</tr>
 				</thead>

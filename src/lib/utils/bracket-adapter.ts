@@ -1,4 +1,4 @@
-// Adapts laga-api's bracket read-model (EventBracket, from
+// Adapts tourney-api's bracket read-model (EventBracket, from
 // $lib/api/endpoints/events) into the Round[] shape PagedKnockoutBracket
 // consumes ($lib/types/bracket). This is a RENDERING transform only — it is
 // deliberately lossy in ways that don't matter for display (per-set detail
@@ -10,7 +10,7 @@ import type { BracketMatch, BracketRound, BracketSlot, EventBracket } from '$lib
 import type { Match, MatchSide, MatchStatus, Round } from '$lib/types/bracket';
 import { DEFAULT_TIMEZONE, zonedShortDate, zonedTime } from '$lib/utils/tz';
 
-// laga-api's match_status enum (generated/types.ts) → the new system's
+// tourney-api's match_status enum (generated/types.ts) → the new system's
 // display-oriented MatchStatus. 'completed' is the only renamed value; every
 // other backend literal has a same-named or intentionally-collapsed member.
 const STATUS_MAP: Record<string, MatchStatus> = {
@@ -89,7 +89,7 @@ function toRound(br: BracketRound, tz: string): Round {
 }
 
 /**
- * Converts BracketRound[] (laga-api's flat rounds array — used both as
+ * Converts BracketRound[] (tourney-api's flat rounds array — used both as
  * EventBracket.rounds and as GroupKnockout.knockout) into Round[], trimming
  * trailing rounds that have no matches yet — a later round the backend hasn't
  * generated/seeded, the same "not ready to render" state the old

@@ -15,10 +15,10 @@
 			<table class="w-full min-w-[420px] border-collapse text-[13px]">
 				<thead>
 					<tr class="border-b border-border text-left">
-						<th class="px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">#</th>
-						<th class="px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Team</th>
+						<th class="px-4 py-2.5 text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted">#</th>
+						<th class="px-4 py-2.5 text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted">Team</th>
 						{#each ['P', 'W', 'L', 'Sets', 'Diff'] as h, hi (hi)}
-							<th class="px-3 py-2.5 text-center text-[10px] font-bold uppercase tracking-[0.14em] text-muted">{h}</th>
+							<th class="px-3 py-2.5 text-center text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted">{h}</th>
 						{/each}
 					</tr>
 				</thead>

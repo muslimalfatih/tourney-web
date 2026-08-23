@@ -1,5 +1,5 @@
 {
-	"name": "laga-web",
+	"name": "tourney-web",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -11,7 +11,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "node --test src/routes/layout.server.test.ts src/lib/utils/tz.test.ts src/lib/utils/fixtures.test.ts src/lib/utils/score-errors.test.ts src/lib/utils/share.test.ts src/lib/server/meta.test.ts",
-		"gen:api": "openapi-typescript ../laga-api/api/openapi.yaml -o src/lib/api/generated/types.ts"
+		"gen:api": "openapi-typescript ../tourney-api/api/openapi.yaml -o src/lib/api/generated/types.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^5.5.7",

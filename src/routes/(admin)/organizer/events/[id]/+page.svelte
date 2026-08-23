@@ -216,7 +216,7 @@
 	>
 	<div class="mt-2 flex flex-wrap items-center justify-between gap-3">
 		<div>
-			<h1 class="font-display text-2xl uppercase tracking-[0.08em] text-primary">{data.event.name}</h1>
+			<h1 class="font-display text-3xl tracking-[-0.01em] text-primary">{data.event.name}</h1>
 			<p class="text-xs capitalize text-muted">
 				{data.event.discipline} · {formatLabel[data.event.format] ?? data.event.format}
 			</p>
@@ -235,17 +235,17 @@
 		<!-- OVERVIEW -->
 		<div class="grid gap-4 sm:grid-cols-3">
 			<Card>
-				<p class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Participants</p>
+				<p class="text-[10px] font-mono font-medium uppercase tracking-[0.16em] text-muted">Participants</p>
 				<p class="mt-1 font-display text-3xl tabular-nums text-primary">{data.event.participant_count}</p>
 				<p class="text-xs capitalize text-muted">{entryNoun}s entered</p>
 			</Card>
 			<Card>
-				<p class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Matches</p>
+				<p class="text-[10px] font-mono font-medium uppercase tracking-[0.16em] text-muted">Matches</p>
 				<p class="mt-1 font-display text-3xl tabular-nums text-primary">{data.event.match_count}</p>
 				<p class="text-xs text-muted">{hasDraw ? 'Bracket generated' : 'No draw yet'}</p>
 			</Card>
 			<Card>
-				<p class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Pairing</p>
+				<p class="text-[10px] font-mono font-medium uppercase tracking-[0.16em] text-muted">Pairing</p>
 				<p class="mt-1 font-display text-2xl capitalize text-primary">{data.event.pairing_mode}</p>
 				<p class="text-xs text-muted">How round 1 was set</p>
 			</Card>
@@ -297,7 +297,7 @@
 					class="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4"
 				>
 					<div>
-						<h2 class="font-display text-[15px] uppercase tracking-[0.08em] text-primary">
+						<h2 class="font-display text-[17px] tracking-[-0.01em] text-primary">
 							Groups &amp; standings
 						</h2>
 						<p class="text-xs text-muted">Standings recompute automatically from match results.</p>
@@ -387,7 +387,7 @@
 		<Card padded={false}>
 			<div class="flex items-center justify-between border-b border-border px-5 py-4">
 				<div>
-					<h2 class="font-display text-[15px] uppercase tracking-[0.08em] text-primary">Participants</h2>
+					<h2 class="font-display text-[17px] tracking-[-0.01em] text-primary">Participants</h2>
 					<p class="text-xs text-muted">
 						{rows.length} {entryNoun}{rows.length === 1 ? '' : 's'}
 					</p>
@@ -420,7 +420,7 @@
 				class="flex flex-wrap items-end gap-2 border-b border-border bg-subtle/50 px-5 py-3"
 			>
 				<div class="flex min-w-[180px] flex-1 flex-col gap-1">
-					<label for="add-name" class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+					<label for="add-name" class="text-[10px] font-mono font-medium uppercase tracking-[0.16em] text-muted">
 						{data.event.discipline === 'doubles' ? 'Team name' : 'Player name'}
 					</label>
 					<input
@@ -451,7 +451,7 @@
 						<thead>
 							<tr class="border-b border-border text-left">
 								{#each [data.event.discipline === 'doubles' ? 'Team' : 'Player', ''] as h, hi (hi)}
-									<th class="px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted"
+									<th class="px-5 py-2.5 text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted"
 										>{h}</th
 									>
 								{/each}
@@ -532,7 +532,7 @@
 		<div class="grid gap-5 lg:grid-cols-[1fr_20rem]">
 			<Card padded={false}>
 				<div class="border-b border-border px-5 py-4">
-					<h2 class="font-display text-[15px] uppercase tracking-[0.08em] text-primary">
+					<h2 class="font-display text-[17px] tracking-[-0.01em] text-primary">
 						Public settings
 					</h2>
 					<p class="text-xs text-muted">Controls how this division appears on the public site.</p>
@@ -625,7 +625,7 @@
 
 			<!-- Live public URL + preview -->
 			<Card class="h-max">
-				<p class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Public URL</p>
+				<p class="text-[10px] font-mono font-medium uppercase tracking-[0.16em] text-muted">Public URL</p>
 				<code
 					class="mt-2 block overflow-x-auto rounded border border-border bg-page px-2 py-1.5 text-[11px] text-primary"
 					>{publicUrl()}</code

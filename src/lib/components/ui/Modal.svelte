@@ -31,7 +31,7 @@
 		>
 			<div class="mb-4 flex items-start justify-between gap-4">
 				<div>
-					<Dialog.Title class="font-display text-lg uppercase tracking-[0.06em] text-primary"
+					<Dialog.Title class="font-display text-xl tracking-[-0.01em] text-primary"
 						>{title}</Dialog.Title
 					>
 					{#if description}

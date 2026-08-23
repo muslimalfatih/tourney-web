@@ -28,7 +28,7 @@
 		</div>
 
 		<h1
-			class="mt-5 font-display uppercase tracking-[-0.02em] text-primary text-[clamp(2.5rem,7vw,5rem)] leading-[0.95]"
+			class="mt-5 font-display tracking-[-0.02em] text-primary text-[clamp(2.5rem,7vw,5rem)] leading-[0.95]"
 		>
 			{title}
 		</h1>
@@ -40,7 +40,7 @@
 			     throws off centred text — adding it would break the flush edge
 			     this column aligns to. -->
 			<p
-				class="mt-4 font-body text-[clamp(1.125rem,2.6vw,1.75rem)] font-bold uppercase leading-tight tracking-[0.2em] text-accent"
+				class="mt-4 font-body text-[clamp(1.125rem,2.6vw,1.75rem)] font-mono font-medium uppercase leading-tight tracking-[0.2em] text-accent"
 			>
 				{activeLabel}
 			</p>

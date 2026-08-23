@@ -237,7 +237,7 @@
 						{/if}
 					</div>
 				{:else if current.kind === 'empty'}
-					<p class="font-display text-[clamp(1.5rem,4vw,3rem)] uppercase tracking-[0.1em] text-muted" style="text-wrap: balance">
+					<p class="font-display text-[clamp(1.5rem,4vw,3rem)] tracking-[-0.01em] text-muted" style="text-wrap: balance">
 						Matches appear here once the draw begins
 					</p>
 				{:else if current.kind === 'live'}
@@ -253,7 +253,7 @@
 									<p class="present-name">{sides[0]}</p>
 									<p class="present-name">{sides[1]}</p>
 								</div>
-								<div class="shrink-0 text-right font-display tabular-nums">
+								<div class="shrink-0 text-right font-mono tabular-nums">
 									<p class="present-name text-accent">{scoreline(liveScores[m.id], 1) || '–'}</p>
 									<p class="present-name text-accent">{scoreline(liveScores[m.id], 2) || '–'}</p>
 								</div>
@@ -267,7 +267,7 @@
 						{#each upcoming as s (s.id)}
 							<li class="present-row">
 								<p class="min-w-0 flex-1 truncate present-name">{s.match_label ?? 'To be decided'}</p>
-								<p class="shrink-0 font-display tabular-nums present-name text-accent">
+								<p class="shrink-0 font-mono tabular-nums present-name text-accent">
 									{zonedTime(s.starts_at, tz)}
 								</p>
 								<p class="present-meta">
@@ -287,7 +287,7 @@
 									<p class="present-name {winner1 ? 'text-accent' : ''}">{sides[0]}</p>
 									<p class="present-name {!winner1 && m.winner_participant_id ? 'text-accent' : ''}">{sides[1]}</p>
 								</div>
-								<div class="shrink-0 text-right font-display tabular-nums">
+								<div class="shrink-0 text-right font-mono tabular-nums">
 									<p class="present-name">{m.sets?.map((s) => s.p1).join('  ') || (m.status !== 'completed' ? m.status : '')}</p>
 									<p class="present-name">{m.sets?.map((s) => s.p2).join('  ') || ''}</p>
 								</div>
@@ -302,7 +302,7 @@
 						{#each slide.groups.slice(0, 2) as g (g.id)}
 							<table class="present-table">
 								{#if g.name}
-									<caption class="pb-2 text-left font-display text-[clamp(1rem,1.8vw,1.5rem)] uppercase tracking-[0.1em] text-gold">{g.name}</caption>
+									<caption class="pb-2 text-left font-mono font-medium text-[clamp(0.7rem,1.2vw,0.9rem)] uppercase tracking-[0.2em] text-gold">{g.name}</caption>
 								{/if}
 								<thead>
 									<tr class="text-muted">
@@ -407,9 +407,8 @@
 	   come from the existing tokens only. */
 	:global(.present-heading) {
 		font-family: var(--font-display, inherit);
-		font-size: clamp(1.75rem, 4.5vw, 3.5rem);
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
+		font-size: clamp(2rem, 5vw, 4rem);
+		letter-spacing: -0.015em;
 		text-align: center;
 		text-wrap: balance;
 	}
@@ -433,10 +432,12 @@
 	}
 	:global(.present-meta) {
 		grid-column: 1 / -1;
-		font-size: clamp(0.8rem, 1.4vw, 1.1rem);
+		font-family: var(--font-mono, monospace);
+		font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+		font-weight: 500;
 		color: var(--color-muted, currentColor);
 		text-transform: uppercase;
-		letter-spacing: 0.12em;
+		letter-spacing: 0.16em;
 	}
 	:global(.present-table) {
 		border-collapse: collapse;

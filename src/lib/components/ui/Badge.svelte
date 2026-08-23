@@ -18,7 +18,7 @@
 
 <span
 	class={cn(
-		'inline-flex items-center gap-1 rounded-pill border px-2 py-0.5 text-xs font-bold uppercase tracking-[0.1em]',
+		'inline-flex items-center gap-1 rounded-pill border px-2 py-0.5 text-xs font-mono font-medium uppercase tracking-[0.1em]',
 		tones[tone],
 		className
 	)}

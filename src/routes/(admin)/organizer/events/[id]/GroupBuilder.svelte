@@ -151,7 +151,7 @@
 		<Card>
 			<div class="mb-3 flex items-center justify-between">
 				<div>
-					<h3 class="font-display text-[13px] uppercase tracking-[0.08em] text-primary">Groups</h3>
+					<h3 class="font-mono font-medium text-[11px] uppercase tracking-[0.16em] text-primary">Groups</h3>
 					<p class="text-xs text-muted">Name each group and set how many teams advance.</p>
 				</div>
 				<Button variant="subtle" size="sm" onclick={addGroup}>
@@ -197,7 +197,7 @@
 		<!-- Assign teams to groups -->
 		<Card padded={false}>
 			<div class="flex items-center justify-between border-b border-border px-5 py-4">
-				<h3 class="font-display text-[13px] uppercase tracking-[0.08em] text-primary">
+				<h3 class="font-mono font-medium text-[11px] uppercase tracking-[0.16em] text-primary">
 					Assign {entryNoun}s
 				</h3>
 				<span class="text-xs text-muted">

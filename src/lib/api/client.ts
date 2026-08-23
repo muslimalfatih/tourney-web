@@ -1,7 +1,7 @@
 import { API_BASE_URL } from '$lib/config/env';
 
 /**
- * API client for laga-api.
+ * API client for tourney-api.
  *
  * Contract conventions (mirrors the backend):
  *   success: { data: T }         → unwrapped to T

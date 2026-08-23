@@ -34,7 +34,7 @@
 		>
 		<span
 			class={cn(
-				'shrink-0 font-display text-[12px] tabular-nums',
+				'shrink-0 font-mono text-[12px] tabular-nums',
 				isWinner(p) ? 'text-accent' : 'text-muted'
 			)}>{games(n)}</span
 		>
@@ -59,7 +59,7 @@
 	)}
 >
 	<div
-		class="flex items-center justify-between bg-subtle px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-muted"
+		class="flex items-center justify-between bg-subtle px-2.5 py-1 text-[9px] font-mono font-medium uppercase tracking-[0.12em] text-muted"
 	>
 		<span>Match {match.match_no}</span>
 		<span class={cn(isBye && 'text-gold', live && 'text-accent')}>{match.status}</span>

@@ -34,7 +34,7 @@
 
 <span
 	class={cn(
-		'inline-flex items-center gap-1.5 rounded-pill border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] leading-[1.4]',
+		'inline-flex items-center gap-1.5 rounded-pill border px-2.5 py-0.5 text-[10px] font-mono font-medium uppercase tracking-[0.12em] leading-[1.4]',
 		tones[tone],
 		className
 	)}

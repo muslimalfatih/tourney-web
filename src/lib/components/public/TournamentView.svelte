@@ -6,7 +6,6 @@
 	import { getEventBracket, getEventStandings, getGroupKnockout } from '$lib/api/endpoints/events';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import Badge from '$lib/components/ui/Badge.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import LightBoard from '$lib/components/ui/LightBoard.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
@@ -210,10 +209,20 @@
 
 <!-- ============ HERO (centered, no header band) ============ -->
 <section class="pt-16 pb-10 text-center sm:pt-24">
-	<div class="mb-8 flex justify-center gap-2">
-		<Badge tone="gold">{data.tournament.sport}</Badge>
-		{#if data.tournament.status === 'published'}<Badge tone="accent">Live event</Badge>{/if}
-	</div>
+	<!-- One quiet eyebrow instead of two bordered badges — the landing's
+	     language. The dot marks a published (live) event. -->
+	<p
+		class="mb-8 flex items-center justify-center gap-2.5 font-mono font-medium text-[11px] uppercase tracking-[0.22em] text-muted"
+	>
+		{data.tournament.sport}
+		{#if data.tournament.status === 'published'}
+			<span aria-hidden="true" class="text-border">·</span>
+			<span class="inline-flex items-center gap-1.5 text-gold">
+				<span class="size-1.5 rounded-full bg-gold animate-pulse motion-reduce:animate-none"></span>
+				Live
+			</span>
+		{/if}
+	</p>
 
 	<!-- The board IS the title. The real <h1> is sr-only and the board is
 	     aria-hidden, so the name is announced once as a heading instead of
@@ -240,7 +249,7 @@
 		     its centre sits 0.1em left of the box centre. The board above is
 		     pixel-centred, so that offset would show as a misalignment. -->
 		<p
-			class="vt-label mt-5 indent-[0.1em] font-body text-[clamp(1.125rem,2.6vw,1.75rem)] font-bold uppercase leading-tight tracking-[0.2em] text-balance text-accent"
+			class="vt-label mt-5 indent-[0.1em] font-body text-[clamp(1.125rem,2.6vw,1.75rem)] font-mono font-medium uppercase leading-tight tracking-[0.2em] text-balance text-accent"
 		>
 			{data.activeLabel}
 		</p>
@@ -264,7 +273,7 @@
 	<a
 		href={pathFor(activeEvent?.slug ?? null, requestedView)}
 		class={cn(
-			'-mb-px border-b-2 px-1 pb-3 text-[11px] font-bold uppercase tracking-[0.12em] transition-colors',
+			'-mb-px border-b-2 px-1 pb-3 text-[11px] font-mono font-medium uppercase tracking-[0.12em] transition-colors',
 			isTournamentWide ? 'border-transparent text-muted hover:text-primary' : 'border-accent text-primary'
 		)}
 	>
@@ -276,7 +285,7 @@
 	<div class="absolute right-0 top-0 -mt-1 flex items-center gap-2">
 		<a
 			href="/tournaments/{tournamentSlug}/present"
-			class="hidden items-center gap-1.5 rounded-pill border border-border px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-primary sm:flex"
+			class="hidden items-center gap-1.5 rounded-pill border border-border px-3 py-1.5 text-[11px] font-mono font-medium uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-primary sm:flex"
 		>
 			<MonitorPlay class="size-3.5" /> Present
 		</a>
@@ -284,7 +293,7 @@
 			type="button"
 			onclick={() => (shareOpen = true)}
 			aria-label="Share this view"
-			class="flex items-center gap-1.5 rounded-pill border border-border p-2 text-[11px] font-bold uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-primary sm:px-3 sm:py-1.5"
+			class="flex items-center gap-1.5 rounded-pill border border-border p-2 text-[11px] font-mono font-medium uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-primary sm:px-3 sm:py-1.5"
 		>
 			<Share2 class="size-3.5" /><span class="hidden sm:inline">Share</span>
 		</button>
@@ -292,7 +301,7 @@
 	<a
 		href="/tournaments/{tournamentSlug}/schedule"
 		class={cn(
-			'-mb-px border-b-2 px-1 pb-3 text-[11px] font-bold uppercase tracking-[0.12em] transition-colors',
+			'-mb-px border-b-2 px-1 pb-3 text-[11px] font-mono font-medium uppercase tracking-[0.12em] transition-colors',
 			data.view === 'schedule' ? 'border-accent text-primary' : 'border-transparent text-muted hover:text-primary'
 		)}
 	>
@@ -356,7 +365,7 @@
 						<div class="border-b border-border px-5 py-4">
 							<div class="flex items-center gap-2">
 								<span class="size-2 rounded-full bg-accent"></span>
-								<h3 class="font-display text-[16px] uppercase tracking-[0.04em] text-primary">{group.name}</h3>
+								<h3 class="font-display text-[17px] tracking-[-0.01em] text-primary">{group.name}</h3>
 							</div>
 						</div>
 						<div class="p-2">

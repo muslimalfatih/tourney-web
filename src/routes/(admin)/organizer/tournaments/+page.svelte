@@ -59,7 +59,7 @@
 
 <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
 	<div>
-		<h1 class="font-display text-2xl uppercase tracking-[0.08em] text-primary">Tournaments</h1>
+		<h1 class="font-display text-3xl tracking-[-0.01em] text-primary">Tournaments</h1>
 		<p class="text-xs text-muted">{counts.total} total · {counts.published} published</p>
 	</div>
 	<Button onclick={() => (createOpen = true)}><Plus class="size-4" /> Create tournament</Button>
@@ -67,7 +67,7 @@
 
 <!-- Filter chips -->
 <div class="mb-4 flex flex-wrap items-center gap-2">
-	<span class="mr-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted">Status</span>
+	<span class="mr-1 text-[10px] font-mono font-medium uppercase tracking-[0.18em] text-muted">Status</span>
 	<Chip active={statusFilter === 'all'} onclick={() => (statusFilter = 'all')}>All</Chip>
 	<Chip active={statusFilter === 'draft'} onclick={() => (statusFilter = 'draft')}>Draft</Chip>
 	<Chip active={statusFilter === 'published'} onclick={() => (statusFilter = 'published')}
@@ -98,7 +98,7 @@
 				<thead>
 					<tr class="border-b border-border text-left">
 						{#each ['Tournament', 'Location', 'Dates', 'Events', 'Status', ''] as h, hi (hi)}
-							<th class="px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted"
+							<th class="px-3 py-2.5 text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted"
 								>{h}</th
 							>
 						{/each}

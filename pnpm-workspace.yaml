@@ -1,4 +1,8 @@
 packages:
   - '.'
+# pnpm 11 build-script allowlist: these two ship native binaries via
+# postinstall and are the only packages permitted to run scripts.
+allowBuilds:
+  esbuild: true
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'

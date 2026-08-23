@@ -3,7 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 
 	// One calm error surface for every route error (404s from loaders, 502s
-	// when laga-api is unreachable). Without this file SvelteKit renders its
+	// when tourney-api is unreachable). Without this file SvelteKit renders its
 	// unstyled default page, which reads as a crash rather than a state.
 	const status = $derived(page.status);
 	const heading = $derived(status === 404 ? 'Not found' : 'Something went wrong');
@@ -15,8 +15,8 @@
 </script>
 
 <div class="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
-	<p class="font-display text-[11px] uppercase tracking-[0.18em] text-muted">{status}</p>
-	<h1 class="font-display text-2xl uppercase tracking-[0.08em] text-primary" style="text-wrap: balance">
+	<p class="font-mono font-medium text-[11px] uppercase tracking-[0.18em] text-muted">{status}</p>
+	<h1 class="font-display text-3xl tracking-[-0.01em] text-primary" style="text-wrap: balance">
 		{heading}
 	</h1>
 	<p class="text-[14px] leading-relaxed text-muted" style="text-wrap: pretty">{detail}</p>

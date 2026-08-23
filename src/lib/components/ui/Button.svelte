@@ -41,7 +41,7 @@
 
 <button
 	class={cn(
-		'inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill font-bold uppercase tracking-[0.14em] leading-none transition-[color,background-color,box-shadow,transform] duration-100 ease-out active:scale-[0.97] motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100',
+		'inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill font-mono font-medium uppercase tracking-[0.14em] leading-none transition-[color,background-color,box-shadow,transform] duration-100 ease-out active:scale-[0.97] motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100',
 		variants[variant],
 		sizes[size],
 		className

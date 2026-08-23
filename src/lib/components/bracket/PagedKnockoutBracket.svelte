@@ -308,7 +308,7 @@
 		background: var(--bk-bg, #0e1015);
 		color: var(--bk-text, #e7e9ee);
 		/* No font-family here — inherits from whatever page embeds this
-		   component (the demo's own <main> sets a sans stack; Laga's real pages
+		   component (the demo's own <main> sets a sans stack; Tourney's real pages
 		   set --font-body globally on <body>), so this stays theme-neutral
 		   instead of overriding a caller's typography. */
 	}

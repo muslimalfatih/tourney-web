@@ -13,12 +13,6 @@
 		name="description"
 		content="Live brackets, courtside scoreboards and shareable schedules for tennis and padel tournaments — built for the clubs that run them."
 	/>
-	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-	<link
-		rel="stylesheet"
-		href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500&display=swap"
-	/>
 </svelte:head>
 
 <section class="hero">
@@ -38,8 +32,8 @@
 		</h1>
 
 		<p class="hero-sub">
-			Live brackets, courtside scoreboards and shareable schedules — for the
-			people who actually run the tournament, not just watch it.
+			One link for the whole cup: live brackets, schedules and the courtside
+			board, updating as every score lands.
 		</p>
 
 		<div class="hero-ctas">
@@ -59,7 +53,9 @@
 <style>
 	.hero {
 		position: relative;
-		min-height: 100vh; /* the home hero owns the whole viewport */
+		/* svh, not vh: on phones the URL bar collapse makes 100vh jump. */
+		min-height: 100vh;
+		min-height: 100svh;
 		display: flex;
 		align-items: flex-end;
 		overflow: clip;
@@ -83,7 +79,8 @@
 		width: 100%;
 		max-width: 72rem;
 		margin-inline: auto;
-		padding: clamp(4rem, 12vh, 8rem) 1.5rem clamp(3rem, 9vh, 5.5rem);
+		padding: clamp(4rem, 12vh, 8rem) 1.5rem
+			calc(clamp(3rem, 9vh, 5.5rem) + env(safe-area-inset-bottom, 0px));
 		animation: hero-rise 700ms cubic-bezier(0.2, 0, 0, 1) both;
 	}
 	@keyframes hero-rise {
@@ -103,7 +100,7 @@
 	}
 
 	.hero-eyebrow {
-		font-family: 'Geist Mono', ui-monospace, 'SF Mono', monospace;
+		font-family: var(--font-mono, monospace);
 		font-size: 11px;
 		font-weight: 500;
 		letter-spacing: 0.22em;
@@ -113,7 +110,7 @@
 	}
 
 	.hero-title {
-		font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+		font-family: var(--font-display, Georgia, serif);
 		font-weight: 400;
 		font-size: clamp(2.6rem, 7vw, 6rem);
 		line-height: 1.04;
@@ -154,7 +151,7 @@
 
 	.hero-sub {
 		margin-top: 1.5rem;
-		max-width: 44ch;
+		max-width: 40ch;
 		font-size: clamp(1rem, 1.6vw, 1.25rem);
 		line-height: 1.55;
 		color: rgb(255 255 255 / 0.82);
@@ -173,7 +170,7 @@
 		height: 3rem;
 		padding-inline: 1.6rem;
 		border-radius: 9999px;
-		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-family: var(--font-mono, monospace);
 		font-size: 12px;
 		font-weight: 500;
 		letter-spacing: 0.14em;
@@ -182,7 +179,25 @@
 		transition:
 			background-color 150ms,
 			border-color 150ms,
-			color 150ms;
+			color 150ms,
+			scale 100ms ease-out;
+	}
+	.pill:active {
+		scale: 0.97;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.pill:active {
+			scale: 1;
+		}
+	}
+	/* Desktop: pills grow to hold their own next to the 6rem headline. */
+	@media (min-width: 640px) {
+		.pill {
+			height: 3.5rem;
+			padding-inline: 2.1rem;
+			font-size: 13px;
+			letter-spacing: 0.16em;
+		}
 	}
 	.pill--solid {
 		background: var(--color-gold, #c9a227);
@@ -243,7 +258,7 @@
 		mask-image: linear-gradient(90deg, black 62%, transparent 96%);
 	}
 	.board-label {
-		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-family: var(--font-mono, monospace);
 		font-size: 10px;
 		font-weight: 500;
 		letter-spacing: 0.2em;
@@ -262,7 +277,7 @@
 		}
 		.board-card {
 			position: static;
-			margin: 0 1.5rem 2rem;
+			margin: 0 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px));
 			width: auto;
 			align-self: flex-start;
 		}

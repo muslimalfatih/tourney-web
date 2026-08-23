@@ -33,7 +33,7 @@
 		{#if games(n)}
 			<span
 				class={cn(
-					'font-display text-sm tabular-nums',
+					'font-mono text-sm tabular-nums',
 					isWinner(p) ? 'text-accent' : 'text-muted'
 				)}>{games(n)}</span
 			>
@@ -45,7 +45,7 @@
 	class="mx-auto max-w-md rounded-lg border border-gold bg-gradient-to-b from-[color-mix(in_srgb,var(--color-gold)_16%,var(--color-surface))] to-surface p-6 text-center shadow-(--shadow-soft)"
 >
 	<span
-		class="inline-flex items-center gap-1 rounded-pill border border-gold bg-[color-mix(in_srgb,var(--color-gold)_18%,var(--color-surface))] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[color-mix(in_srgb,var(--color-gold)_55%,var(--color-primary))]"
+		class="inline-flex items-center gap-1 rounded-pill border border-gold bg-[color-mix(in_srgb,var(--color-gold)_18%,var(--color-surface))] px-3 py-1 text-[10px] font-mono font-medium uppercase tracking-[0.16em] text-[color-mix(in_srgb,var(--color-gold)_55%,var(--color-primary))]"
 	>
 		Champion
 	</span>
@@ -53,7 +53,7 @@
 	<div class="mt-5 flex items-center justify-center gap-3">
 		{@render side(slot(1), 1)}
 		<span
-			class="shrink-0 rounded-pill border border-gold bg-surface px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-gold"
+			class="shrink-0 rounded-pill border border-gold bg-surface px-2.5 py-1 text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-gold"
 			>VS</span
 		>
 		{@render side(slot(2), 2)}

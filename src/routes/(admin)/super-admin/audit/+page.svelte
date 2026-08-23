@@ -35,7 +35,7 @@
 </script>
 
 <div class="mb-6">
-	<h1 class="font-display text-2xl uppercase tracking-[0.08em] text-primary">Audit log</h1>
+	<h1 class="font-display text-3xl tracking-[-0.01em] text-primary">Audit log</h1>
 	<p class="text-xs text-muted">Critical changes across the platform, newest first.</p>
 </div>
 

@@ -1,4 +1,4 @@
-# Laga — Workflows & Design Tokens
+# Tourney — Workflows & Design Tokens
 
 Reference for the current implemented flows (login → create → edit) with the
 edge cases each one already handles, plus the complete design-token system.
@@ -11,7 +11,7 @@ Two httpOnly cookies drive auth: `access_token` (~15 min) and `refresh_token`
 (long-lived).
 
 ### Login — `(auth)/login/+page.server.ts`
-- Submit email + password → laga-api → cookies set.
+- Submit email + password → tourney-api → cookies set.
 - Success → redirect by role: `super_admin` → `/super-admin`, else → `/organizer`.
 
 ### Session resolution — `hooks.server.ts` (runs every request)
@@ -22,7 +22,7 @@ Two httpOnly cookies drive auth: `access_token` (~15 min) and `refresh_token`
 
 ### Route guard — `(admin)/+layout.server.ts`
 No `session.user` → `redirect(303, /login?redirect=<path>)`. Every admin load
-forwards `accessToken` to laga-api as bearer.
+forwards `accessToken` to tourney-api as bearer.
 
 **Edge cases handled**
 

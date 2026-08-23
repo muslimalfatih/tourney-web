@@ -22,7 +22,7 @@
 
 <button
 	class={cn(
-		'cursor-pointer rounded-pill border px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest leading-none transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.96] motion-reduce:active:scale-100',
+		'cursor-pointer rounded-pill border px-4 py-1.5 text-[11px] font-mono font-medium uppercase tracking-widest leading-none transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.96] motion-reduce:active:scale-100',
 		state,
 		className
 	)}

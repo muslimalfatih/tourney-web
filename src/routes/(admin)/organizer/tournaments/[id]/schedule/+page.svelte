@@ -101,7 +101,7 @@
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
 	<div>
 		<a href="/organizer/tournaments/{data.tournament.id}" class="text-sm text-muted hover:text-primary">← Tournament</a>
-		<h1 class="mt-2 font-display text-2xl uppercase tracking-[0.08em] text-primary">Schedule</h1>
+		<h1 class="mt-2 font-display text-3xl tracking-[-0.01em] text-primary">Schedule</h1>
 		<p class="text-xs text-muted">Assign matches to courts and times. Each slot runs 90 minutes.</p>
 	</div>
 	<div class="flex gap-2">
@@ -119,7 +119,7 @@
 <!-- Courts -->
 <Card class="mb-6">
 	<div class="mb-3 flex items-center justify-between">
-		<h2 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">Courts</h2>
+		<h2 class="text-[10px] font-mono font-medium uppercase tracking-[0.18em] text-muted">Courts</h2>
 		<span class="text-[11px] text-muted">{data.courts.length} court{data.courts.length === 1 ? '' : 's'}</span>
 	</div>
 	{#if data.courts.length === 0}
@@ -140,7 +140,7 @@
 	<div class="flex flex-col gap-6">
 		{#each days as [day, slots] (day)}
 			<div>
-				<h3 class="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-accent">
+				<h3 class="mb-2 flex items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-[0.16em] text-accent">
 					<Clock class="size-3.5" /> {day}
 					<span class="font-normal normal-case tracking-normal text-muted">· {slots.length} match{slots.length === 1 ? '' : 'es'}</span>
 				</h3>
@@ -148,8 +148,8 @@
 					<ul class="divide-y divide-border">
 						{#each slots as s (s.id)}
 							<li class="group flex items-center gap-4 px-5 py-3 transition-colors hover:bg-subtle">
-								<span class="w-14 shrink-0 font-display text-[15px] tabular-nums text-primary">{fmtTime(s.starts_at)}</span>
-								<span class="w-32 shrink-0 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">{s.court_name}</span>
+								<span class="w-14 shrink-0 font-mono text-[15px] tabular-nums text-primary">{fmtTime(s.starts_at)}</span>
+								<span class="w-32 shrink-0 text-[11px] font-mono font-medium uppercase tracking-[0.08em] text-muted">{s.court_name}</span>
 								<span class="min-w-0 flex-1 truncate text-[13px] {s.match_label ? 'text-primary' : 'text-muted'}">
 									{s.match_label ?? 'Held (no match)'}
 								</span>

@@ -21,46 +21,48 @@
 }
 
 /*
- * LAGA — dark-blue design system, reinstated after a brief burgundy detour.
- * The palette is the /bracket-demo palette: every value below is a --bk-*
- * fallback lifted verbatim out of the bracket components (BracketMatchCard,
- * PagedKnockoutBracket), so the bracket and the chrome around it are the same
- * material. Light mode is intentionally NOT defined.
+ * TOURNEY — the tourney.social system: neutral near-black grounds, warm ivory
+ * text, and GOLD as the one interactive/brand accent (the landing's identity,
+ * carried into the product). Blue is gone: the film-grain black + gold pill
+ * language of the homepage is now the whole app's material. Light mode is
+ * intentionally NOT defined.
  *
- * /bracket-demo keeps its OWN hardcoded copy of these exact values (see
- * bracket-demo/+page.svelte) rather than reading these tokens — that
- * decoupling means the demo stays a stable dark reference no matter which way
- * the app theme swings next; it needed zero edits across the burgundy
- * round-trip and needs zero edits now that this matches it again by
- * coincidence, not by reading it. The --bk-* re-theme wrapper around
- * <PagedKnockoutBracket> in TournamentView.svelte maps to these tokens
- * directly, so it re-themes automatically with no file change either.
+ * Every text pair below was contrast-checked: primary 16:1, muted 5.8:1,
+ * gold-as-text 8.9:1, ink-on-gold 8.7:1 (AA+ across the board; borders are
+ * structural hairlines, not text).
  *
- * Canonical faces: Zodiak (display) + Satoshi (body) were the intended
- * binaries; Zodiak isn't loaded, so display text actually renders in Georgia
- * (see the lining-nums note below). --font-body stays the demo's system-sans
- * stack, not Satoshi — that pairing was its own explicit decision, independent
- * of color.
+ * /bracket-demo keeps its own hardcoded copy of the OLD dark-blue values —
+ * it is a frozen internal reference, decoupled on purpose. The live bracket
+ * re-themes automatically through the --bk-* wrapper in TournamentView, which
+ * maps to these tokens.
+ *
+ * Faces (since the tourney.social landing shipped): Instrument Serif carries
+ * display — headlines, titles, big stat numerals — in sentence case, never
+ * uppercase-tracked (it has one weight, 400, and needs no more). Geist Mono
+ * carries every LABEL (eyebrows, pills, tabs, table headers) and every piece
+ * of DATA (scores, times, counts): uppercase + tracked + medium for labels,
+ * plain for data. Body stays the system sans. Both faces load globally from
+ * app.html.
  */
 @theme {
-	/* grounds + surfaces — --bk-bg / --bk-card-bg / --bk-nav-hover / --bk-card-border */
-	--color-page: #0e1015;
-	--color-surface: #191c22;
-	--color-subtle: #23272f;
-	--color-border: #2a2e37;
+	/* grounds + surfaces — neutral, no blue cast */
+	--color-page: #0d0d0f;
+	--color-surface: #151517;
+	--color-subtle: #1e1e21;
+	--color-border: #2b2b2f;
 
-	/* text — --bk-text / --bk-muted (5.2:1 on page) */
-	--color-primary: #e7e9ee;
-	--color-muted: #7a8194;
-	/* Ink on accent/danger/gold fills. Dark, not white: white on #5b8def is
-	   only 3.2:1, the page ground on it is 5.8:1. */
-	--color-on-accent: #0e1015;
+	/* text — warm ivory + warm gray (16:1 / 5.8:1 on page) */
+	--color-primary: #ece9e2;
+	--color-muted: #8f8c84;
+	/* Ink on gold fills — 8.7:1, the landing's pill treatment. */
+	--color-on-accent: #121006;
 
-	/* accents (locked anchor) — --bk-accent / --bk-gold */
-	--color-accent: #5b8def;
-	--color-accent-hover: #7aa3f5;
-	--color-accent-soft: #3f5c99;
-	--color-gold: #d4a94e; /* seeds / special badges only */
+	/* THE accent: gold. Buttons, active states, focus rings, bracket winners.
+	   Seeds/badges share the same family — one gold, one meaning: emphasis. */
+	--color-accent: #d4a94e;
+	--color-accent-hover: #e0bd6f;
+	--color-accent-soft: #5a4a22;
+	--color-gold: #d4a94e;
 
 	/* semantic (separate from accent; not brand hues). Lightened from the
 	   light-theme #b3261e, which sinks into a dark ground. */
@@ -76,8 +78,9 @@
 	--shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.24);
 	--shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.55);
 
-	--font-display: 'Zodiak', 'Georgia', 'Times New Roman', serif;
+	--font-display: 'Instrument Serif', 'Georgia', 'Times New Roman', serif;
 	--font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--font-mono: 'Geist Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
 }
 
 :root {
@@ -93,23 +96,16 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
-/* Display face for headings by default.
- *
- * lining-nums is not optional with this stack: Zodiak is unlicensed here so the
- * face that actually renders is Georgia, whose figures are old-style by default
- * — 3/4/5/7/9 hang below the baseline, 0/1/2 sit at x-height. `font-display` is
- * on scores, standings ranks, kickoff times and match numbers all over the app,
- * where bobbing digits read as a rendering bug.
- *
- * Deliberately unlayered: Tailwind's `tabular-nums` utility (paired with
- * `font-display` in ~10 places) rewrites the whole font-variant-numeric
- * shorthand from @layer utilities, which would drop lining back to old-style.
- * Unlayered beats every layer, so both keywords survive. Display text is
- * titles, ranks and scores — tabular everywhere here is what we want anyway.
- */
-h1,
-h2,
-h3,
+/* Display face for headings by default. lining-nums stays as insurance for
+ * the Georgia fallback (old-style figures bob); with Instrument Serif loaded
+ * it is a no-op, and scores/times/counters now sit in Geist Mono anyway,
+ * which is lining + tabular by construction. */
+/* :not(.font-mono): this block is unlayered (it must outrank layered
+ * utilities for the serif default), which would ALSO outrank an explicit
+ * `font-mono` on a heading — mono eyebrow h3s exist all over the app. */
+h1:not(.font-mono),
+h2:not(.font-mono),
+h3:not(.font-mono),
 .font-display {
 	font-family: var(--font-display);
 	font-variant-numeric: lining-nums tabular-nums;

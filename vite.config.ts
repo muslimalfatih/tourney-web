@@ -15,7 +15,7 @@ export default defineConfig({
 
 			// On Vercel (VERCEL=1 in their build env) build serverless functions;
 			// everywhere else keep the Node server so `pnpm build && node build`
-			// self-hosting and local previews still work. laga-api deploys
+			// self-hosting and local previews still work. tourney-api deploys
 			// separately either way. See README.
 			adapter: process.env.VERCEL ? vercel({ runtime: 'nodejs24.x' }) : node(),
 

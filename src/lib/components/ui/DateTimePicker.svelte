@@ -101,7 +101,7 @@
 									<ChevronLeft class="size-4" />
 								</Calendar.PrevButton>
 								<Calendar.Heading
-									class="font-display text-[13px] uppercase tracking-[0.06em] text-primary"
+									class="font-mono font-medium text-[11px] uppercase tracking-[0.16em] text-primary"
 								/>
 								<Calendar.NextButton
 									class="grid size-7 cursor-pointer place-items-center rounded-pill text-muted hover:bg-subtle hover:text-primary"
@@ -115,7 +115,7 @@
 										<Calendar.GridRow class="flex">
 											{#each weekdays as day (day)}
 												<Calendar.HeadCell
-													class="w-9 text-[10px] font-bold uppercase tracking-[0.1em] text-muted"
+													class="w-9 text-[10px] font-mono font-medium uppercase tracking-[0.1em] text-muted"
 												>
 													{day.slice(0, 2)}
 												</Calendar.HeadCell>

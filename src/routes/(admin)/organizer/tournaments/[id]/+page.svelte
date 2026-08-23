@@ -79,7 +79,7 @@
 	>
 	<div class="mt-2 flex flex-wrap items-center justify-between gap-3">
 		<div>
-			<h1 class="font-display text-2xl uppercase tracking-[0.08em] text-primary">
+			<h1 class="font-display text-3xl tracking-[-0.01em] text-primary">
 				{data.tournament.name}
 			</h1>
 			<p class="text-xs text-muted">
@@ -116,7 +116,7 @@
 {#if data.events.length > 0}
 	<Card class="mb-4 flex flex-wrap items-center justify-between gap-3">
 		<div class="flex flex-wrap items-center gap-2">
-			<span class="mr-1 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Category</span>
+			<span class="mr-1 text-[10px] font-mono font-medium uppercase tracking-[0.16em] text-muted">Category</span>
 			<Chip active={catFilter === null} onclick={() => (catFilter = null)}>All</Chip>
 			{#each categories as c (c)}
 				<Chip active={catFilter === c} onclick={() => (catFilter = c)}>{catLabel(c)}</Chip>
@@ -125,7 +125,7 @@
 
 		<div class="flex flex-wrap items-center gap-3">
 			<div class="flex items-center gap-2">
-				<span class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Gender</span>
+				<span class="text-[10px] font-mono font-medium uppercase tracking-[0.16em] text-muted">Gender</span>
 				<SegmentedControl
 					options={[
 						{ value: null, label: 'All' },
@@ -139,7 +139,7 @@
 				/>
 			</div>
 			<div class="flex items-center gap-2">
-				<span class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Phase</span>
+				<span class="text-[10px] font-mono font-medium uppercase tracking-[0.16em] text-muted">Phase</span>
 				<SegmentedControl
 					options={[
 						{ value: null, label: 'All' },
@@ -158,7 +158,7 @@
 <!-- Events / divisions card -->
 <Card padded={false} class="mb-6">
 	<div class="flex items-center justify-between border-b border-border px-5 py-4">
-		<h2 class="font-display text-[15px] uppercase tracking-[0.08em] text-primary">
+		<h2 class="font-display text-[17px] tracking-[-0.01em] text-primary">
 			Events &amp; divisions
 		</h2>
 		<Button variant="ghost" size="sm" onclick={() => (addOpen = true)}
@@ -179,7 +179,7 @@
 				<thead>
 					<tr class="border-b border-border text-left">
 						{#each ['Division', 'Category', 'Gender', 'Format', 'Teams', 'Public', ''] as h, hi (hi)}
-							<th class="px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted"
+							<th class="px-5 py-2.5 text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted"
 								>{h}</th
 							>
 						{/each}

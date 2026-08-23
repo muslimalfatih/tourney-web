@@ -1,7 +1,7 @@
 /**
  * Domain types consumed across the app. These are hand-authored for the
  * skeleton; once the OpenAPI spec stabilises, run `pnpm gen:api` to regenerate
- * `generated/types.ts` from laga-api/api/openapi.yaml and re-export the
+ * `generated/types.ts` from tourney-api/api/openapi.yaml and re-export the
  * canonical shapes from here. Keeping a single import surface (`$lib/api/types`)
  * means switching to generated types later touches only this file.
  */

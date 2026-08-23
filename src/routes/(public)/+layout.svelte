@@ -15,7 +15,7 @@
 		class="sticky top-0 z-30 bg-page/80 backdrop-blur-xl backdrop-saturate-150 supports-[not(backdrop-filter:blur(0px))]:bg-page"
 	>
 		<div class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
-			<a href="/" class="flex items-center gap-2 font-semibold text-primary">
+			<a href="/" class="flex items-center gap-2 font-display italic text-[19px] tracking-[-0.01em] text-primary">
 				<BrandIcon class="size-5 text-accent" />
 				tourney.social
 			</a>
@@ -27,10 +27,4 @@
 		{@render children()}
 	</main>
 
-	<footer class="border-t border-border/60 py-6">
-		<div class="mx-auto flex max-w-6xl items-center justify-between px-4 text-xs text-muted">
-			<span>Powered by tourney.social</span>
-			<a href="/contact" class="transition-colors hover:text-primary">Contact</a>
-		</div>
-	</footer>
 </div>

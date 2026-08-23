@@ -34,7 +34,7 @@
 <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
 	<div>
 		<a href="/organizer/events/{data.event.id}" class="text-sm text-muted hover:text-primary">← Event</a>
-		<h1 class="mt-2 font-display text-2xl uppercase tracking-[0.08em] text-primary">
+		<h1 class="mt-2 font-display text-3xl tracking-[-0.01em] text-primary">
 			{data.event.name} — {title}
 		</h1>
 		<p class="text-xs capitalize text-muted">{data.event.discipline} · {formatLabel[kind] ?? kind}</p>

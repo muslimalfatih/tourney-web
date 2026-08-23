@@ -124,7 +124,7 @@
 					class="flex min-w-[13rem] flex-col"
 				>
 					<div class="mb-3 px-1">
-						<h3 class="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">{round.name}</h3>
+						<h3 class="text-[10px] font-mono font-medium uppercase tracking-[0.18em] text-muted">{round.name}</h3>
 						<p class="text-[11px] text-muted">
 							{round.matches.length} match{round.matches.length === 1 ? '' : 'es'}
 						</p>

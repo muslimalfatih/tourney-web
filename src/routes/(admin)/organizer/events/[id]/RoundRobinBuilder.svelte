@@ -87,7 +87,7 @@
 	{:else}
 		<!-- Add a fixture -->
 		<Card>
-			<h3 class="font-display text-[13px] uppercase tracking-[0.08em] text-primary">Add fixture</h3>
+			<h3 class="font-mono font-medium text-[11px] uppercase tracking-[0.16em] text-primary">Add fixture</h3>
 			<p class="mt-1 text-xs text-muted">
 				Pick two {entryNoun}s to create a match. Add every fixture you want to play.
 			</p>
@@ -116,7 +116,7 @@
 				<div class="min-w-[10rem] flex-1">
 					<Select value={teamA} {items} placeholder="Select {entryNoun}" onValueChange={(v) => (teamA = v)} />
 				</div>
-				<span class="text-[10px] font-bold uppercase text-muted">vs</span>
+				<span class="text-[10px] font-mono font-medium uppercase text-muted">vs</span>
 				<div class="min-w-[10rem] flex-1">
 					<Select value={teamB} items={itemsB} placeholder="Select {entryNoun}" onValueChange={(v) => (teamB = v)} />
 				</div>
@@ -146,7 +146,7 @@
 		<Card padded={false}>
 			<div class="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
 				<div>
-					<h3 class="font-display text-[13px] uppercase tracking-[0.08em] text-primary">
+					<h3 class="font-mono font-medium text-[11px] uppercase tracking-[0.16em] text-primary">
 						Fixtures · {fixtures.length}
 					</h3>
 					<p class="text-xs text-muted">Remove a fixture only before it has been played.</p>
@@ -178,7 +178,7 @@
 				<ul class="divide-y divide-border">
 					{#each fixtures as f (f.id)}
 						<li class="flex items-center gap-3 px-5 py-3">
-							<span class="w-14 shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] text-muted">
+							<span class="w-14 shrink-0 text-[10px] font-mono font-medium uppercase tracking-[0.12em] text-muted">
 								Match {f.match_no}
 							</span>
 							<span class="min-w-0 flex-1 truncate text-[13px] text-primary">

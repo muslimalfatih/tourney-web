@@ -3,7 +3,7 @@
 	// one giant serif email centered on a dark field, decorative tiles drifting
 	// around it with a pointer-driven parallax, and a four-column info grid
 	// anchored at the bottom. Tiles are CSS-crafted (gradients + the LightBoard
-	// dot motif) so the page ships self-contained, in the laga palette.
+	// dot motif) so the page ships self-contained, in the tourney palette.
 	import { page } from '$app/state';
 
 	const EMAIL = 'hello@tourney.social';
@@ -58,12 +58,6 @@
 	<title>Contact — tourney.social</title>
 	<meta name="description" content="Talk to the team behind tourney.social — tournaments, live draws and schedules for tennis and padel." />
 	<link rel="canonical" href={new URL('/contact', page.url.origin).href} />
-	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-	<link
-		rel="stylesheet"
-		href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500&display=swap"
-	/>
 </svelte:head>
 
 <svelte:window onpointermove={onPointerMove} />
@@ -126,7 +120,7 @@
 
 	/* --- the headline email ------------------------------------------------ */
 	.contact-email {
-		font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+		font-family: var(--font-display, Georgia, serif);
 		font-size: clamp(2rem, 7.5vw, 7rem);
 		line-height: 1.05;
 		letter-spacing: -0.015em;
@@ -163,7 +157,7 @@
 
 	/* --- info grid ---------------------------------------------------------- */
 	.contact-label {
-		font-family: 'Geist Mono', ui-monospace, 'SF Mono', monospace;
+		font-family: var(--font-mono, monospace);
 		font-size: 11px;
 		font-weight: 500;
 		text-transform: uppercase;
@@ -189,7 +183,7 @@
 	}
 
 	/* --- floating tiles ------------------------------------------------------
-	   Gradient "photographs" in the laga palette; the dot layer echoes the
+	   Gradient "photographs" in the tourney palette; the dot layer echoes the
 	   LightBoard. transform is driven inline (parallax); the float keyframe
 	   rides on translate so the two compose. */
 	.tile {

@@ -1,14 +1,14 @@
 // Data model for a paged single-elimination knockout bracket. Kept separate
-// from laga's live bracket types ($lib/api/endpoints/events) — this tree is a
+// from tourney's live bracket types ($lib/api/endpoints/events) — this tree is a
 // self-contained, reusable component driven by whatever shape the caller
-// provides, not by laga-api's response shape.
+// provides, not by tourney-api's response shape.
 
 export type Team = {
 	id: string;
 	name: string;
 	code?: string | null;
 	// Seed number shown as a small badge next to the team name, e.g. "#3". Not
-	// used by every caller — laga-api's bracket read-model carries it per slot.
+	// used by every caller — tourney-api's bracket read-model carries it per slot.
 	seed?: number | null;
 };
 
@@ -18,7 +18,7 @@ export type MatchSide = {
 	penalties?: number | null;
 	// Pre-formatted score display, e.g. "6 4 6" for a set-by-set scoreline —
 	// takes precedence over `score` when present. Exists because some sources
-	// (laga-api's bracket read-model) track per-set games rather than a single
+	// (tourney-api's bracket read-model) track per-set games rather than a single
 	// running number, and set-by-set is what should actually render; `score`
 	// stays the simple numeric case for callers (like the demo mock data) that
 	// only ever have one number per side.

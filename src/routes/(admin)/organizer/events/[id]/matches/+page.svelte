@@ -89,7 +89,7 @@
 		href="/organizer/events/{data.event.id}"
 		class="text-sm text-muted transition-colors hover:text-primary">← Event</a
 	>
-	<h1 class="mt-2 font-display text-2xl uppercase tracking-[0.08em] text-primary">
+	<h1 class="mt-2 font-display text-3xl tracking-[-0.01em] text-primary">
 		{data.event.name} — Matches
 	</h1>
 	<p class="text-xs text-muted">Enter scores. Completing a match advances the winner.</p>
@@ -108,7 +108,7 @@
 		{#each data.matches as m (m.id)}
 			<Card padded={false}>
 				<div class="flex items-center gap-4 px-4 py-3">
-					<span class="w-14 shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] text-muted"
+					<span class="w-14 shrink-0 text-[10px] font-mono font-medium uppercase tracking-[0.12em] text-muted"
 						>Match {m.match_no}</span
 					>
 					<!-- two rows of names + scores -->
@@ -122,7 +122,7 @@
 											? 'text-primary'
 											: 'text-muted'}">{name(m, n)}</span
 								>
-								<span class="shrink-0 font-display text-[13px] tabular-nums text-muted"
+								<span class="shrink-0 font-mono text-[13px] tabular-nums text-muted"
 									>{scoreStr(m, n)}</span
 								>
 							</div>
@@ -130,7 +130,7 @@
 					</div>
 					{#if m.status === 'live'}
 						<span
-							class="inline-flex shrink-0 items-center gap-1.5 rounded-pill bg-danger/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-danger"
+							class="inline-flex shrink-0 items-center gap-1.5 rounded-pill bg-danger/10 px-2.5 py-1 text-[11px] font-mono font-medium uppercase tracking-[0.08em] text-danger"
 						>
 							<span class="size-1.5 animate-pulse rounded-full bg-danger motion-reduce:animate-none"
 							></span>
@@ -194,14 +194,14 @@
 
 			{#if showSets}
 				<div class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 text-[13px]">
-					<span class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Set</span>
-					<span class="w-14 truncate text-center text-[10px] font-bold uppercase tracking-[0.12em] text-muted"
+					<span class="text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted">Set</span>
+					<span class="w-14 truncate text-center text-[10px] font-mono font-medium uppercase tracking-[0.12em] text-muted"
 						>{name(active, 1).split(' ')[0]}</span
 					>
-					<span class="w-14 truncate text-center text-[10px] font-bold uppercase tracking-[0.12em] text-muted"
+					<span class="w-14 truncate text-center text-[10px] font-mono font-medium uppercase tracking-[0.12em] text-muted"
 						>{name(active, 2).split(' ')[0]}</span
 					>
-					<span class="w-20 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-muted"
+					<span class="w-20 text-center text-[10px] font-mono font-medium uppercase tracking-[0.12em] text-muted"
 						>Tiebreak</span
 					>
 					{#each sets as s, i (i)}
@@ -254,7 +254,7 @@
 				<button
 					type="button"
 					onclick={addSet}
-					class="self-start text-[11px] font-bold uppercase tracking-[0.12em] text-accent hover:text-accent-hover"
+					class="self-start text-[11px] font-mono font-medium uppercase tracking-[0.12em] text-accent hover:text-accent-hover"
 					>+ Add set</button
 				>
 				<p class="text-[11px] text-muted">A 7-6 set needs its tiebreak points (e.g. 7-3).</p>
@@ -264,7 +264,7 @@
 			<div class="flex flex-col gap-2">
 				<label
 					for="rr-ending"
-					class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Ending</label
+					class="text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted">Ending</label
 				>
 				<select id="rr-ending" bind:value={ending} class="{inputClass} w-full">
 					<option value="normal">Played result</option>
@@ -276,7 +276,7 @@
 
 			{#if needsWinner}
 				<fieldset class="flex flex-col gap-2">
-					<legend class="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
+					<legend class="text-[10px] font-mono font-medium uppercase tracking-[0.14em] text-muted">
 						Winner
 					</legend>
 					{#each [1, 2] as n (n)}

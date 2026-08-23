@@ -26,7 +26,7 @@
 
 
 // ---------------------------------------------------------------------------
-// VENDORED for laga-web (Phase 4B). Source: Project Nayuki's qrcodegen.ts
+// VENDORED for tourney-web (Phase 4B). Source: Project Nayuki's qrcodegen.ts
 // (MIT, header above), commit tip of nayuki/QR-Code-generator at vendor time.
 // Local modifications, made because npm install is unavailable in this
 // environment and Node's type stripping cannot execute TS namespaces:
