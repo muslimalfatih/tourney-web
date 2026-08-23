@@ -381,30 +381,10 @@
 			<EmptyState title="Group stage not ready" message="Standings appear once the draw is generated." />
 		{/if}
 	{:else if hasKnockout}
-		<!-- --bk-* re-theme wrapper is back. PagedKnockoutBracket's built-in
-		     fallbacks (var(--bk-bg, #0e1015) etc.) are still hardcoded dark —
-		     they matched the app theme for a while when the app was ALSO dark,
-		     but the app is burgundy again and the component's own fallbacks
-		     didn't move with it. Without this wrapper the public bracket would
-		     render as a dark island inside an otherwise-burgundy page. Sizing
-		     vars (--bk-card-w etc.) are left alone; those come from the
-		     component's own responsive JS, not from theme. -->
-		<div
-			style:--bk-bg="var(--color-page)"
-			style:--bk-text="var(--color-primary)"
-			style:--bk-muted="var(--color-muted)"
-			style:--bk-accent="var(--color-accent)"
-			style:--bk-winner="var(--color-accent)"
-			style:--bk-gold="var(--color-gold)"
-			style:--bk-header="var(--color-muted)"
-			style:--bk-card-bg="var(--color-surface)"
-			style:--bk-card-border="var(--color-border)"
-			style:--bk-meta-bg="var(--color-subtle)"
-			style:--bk-connector="var(--color-border)"
-			style:--bk-nav-hover="var(--color-subtle)"
-		>
-			<PagedKnockoutBracket rounds={adaptedKnockoutRounds} />
-		</div>
+		<!-- No theme wrapper needed: PagedKnockoutBracket's --bk-* fallbacks
+		     point at the app's --color-* tokens, so every mount is themed.
+		     Set --bk-* vars on a wrapper only to deliberately diverge. -->
+		<PagedKnockoutBracket rounds={adaptedKnockoutRounds} />
 	{:else}
 		<EmptyState title="Draw not published yet" message="The bracket appears once the organizer generates the draw." />
 	{/if}

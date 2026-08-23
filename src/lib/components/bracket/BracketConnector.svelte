@@ -16,7 +16,7 @@
 		topFeederCenter,
 		bottomFeederCenter,
 		gapWidth,
-		lineColor = 'var(--bk-connector, #3a3f4b)',
+		lineColor = 'var(--bk-connector, var(--color-border))',
 		thickness = 2
 	}: {
 		// Vertical center (px, relative to the column) of the top and bottom

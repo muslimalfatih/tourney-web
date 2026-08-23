@@ -305,8 +305,8 @@
 		justify-content: center;
 		gap: 12px;
 		padding: 24px 0;
-		background: var(--bk-bg, #0e1015);
-		color: var(--bk-text, #e7e9ee);
+		background: var(--bk-bg, var(--color-page));
+		color: var(--bk-text, var(--color-primary));
 		/* No font-family here — inherits from whatever page embeds this
 		   component (the demo's own <main> sets a sans stack; Tourney's real pages
 		   set --font-body globally on <body>), so this stays theme-neutral
@@ -343,16 +343,16 @@
 		width: 36px;
 		height: 36px;
 		border-radius: 999px;
-		border: 1px solid var(--bk-card-border, #2a2e37);
-		background: var(--bk-card-bg, #191c22);
-		color: var(--bk-text, #e7e9ee);
+		border: 1px solid var(--bk-card-border, var(--color-border));
+		background: var(--bk-card-bg, var(--color-surface));
+		color: var(--bk-text, var(--color-primary));
 		cursor: pointer;
 	}
 	.nav:hover {
-		background: var(--bk-nav-hover, #23272f);
+		background: var(--bk-nav-hover, var(--color-subtle));
 	}
 	.nav:focus-visible {
-		outline: 2px solid var(--bk-accent, #5b8def);
+		outline: 2px solid var(--bk-accent, var(--color-accent));
 		outline-offset: 2px;
 	}
 	/* Hidden rather than display:none — the button keeps its box in the flex
@@ -398,9 +398,9 @@
 	.bracket-error {
 		padding: 16px;
 		border-radius: 8px;
-		background: #2a1518;
-		border: 1px solid #5a2328;
-		color: #f4a5ab;
+		background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent);
+		color: var(--color-danger);
 		font-size: 14px;
 	}
 
@@ -486,7 +486,7 @@
 		height: 6px;
 	}
 	.scroll-container::-webkit-scrollbar-thumb {
-		background: var(--bk-card-border, #2a2e37);
+		background: var(--bk-card-border, var(--color-border));
 		border-radius: 999px;
 	}
 	.scroll-container::-webkit-scrollbar-track {
@@ -518,11 +518,11 @@
 	}
 	.edge-fade-left {
 		left: 0;
-		background: linear-gradient(to right, var(--bk-bg, #0e1015), transparent);
+		background: linear-gradient(to right, var(--bk-bg, var(--color-page)), transparent);
 	}
 	.edge-fade-right {
 		right: 0;
-		background: linear-gradient(to left, var(--bk-bg, #0e1015), transparent);
+		background: linear-gradient(to left, var(--bk-bg, var(--color-page)), transparent);
 	}
 
 	.swipe-hint {
@@ -535,9 +535,9 @@
 		gap: 4px;
 		padding: 5px 10px;
 		border-radius: 999px;
-		background: var(--bk-card-bg, #191c22);
-		border: 1px solid var(--bk-card-border, #2a2e37);
-		color: var(--bk-muted, #7a8194);
+		background: var(--bk-card-bg, var(--color-surface));
+		border: 1px solid var(--bk-card-border, var(--color-border));
+		color: var(--bk-muted, var(--color-muted));
 		font-size: 11px;
 		font-weight: 600;
 		white-space: nowrap;

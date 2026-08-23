@@ -33,8 +33,8 @@
  *
  * /bracket-demo keeps its own hardcoded copy of the OLD dark-blue values —
  * it is a frozen internal reference, decoupled on purpose. The live bracket
- * re-themes automatically through the --bk-* wrapper in TournamentView, which
- * maps to these tokens.
+ * re-themes automatically: the bracket components' --bk-* fallbacks point at
+ * these tokens, so every mount follows the theme unless a wrapper overrides.
  *
  * Faces (since the tourney.social landing shipped): Instrument Serif carries
  * display — headlines, titles, big stat numerals — in sentence case, never

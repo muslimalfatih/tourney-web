@@ -113,8 +113,8 @@
 		display: flex;
 		flex-direction: column;
 		border-radius: 10px;
-		background: var(--bk-card-bg, #191c22);
-		border: 1px solid var(--bk-card-border, #2a2e37);
+		background: var(--bk-card-bg, var(--color-surface));
+		border: 1px solid var(--bk-card-border, var(--color-border));
 		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
 		overflow: hidden;
 		/* Reset the browser defaults a native <button>/<a> would otherwise bring
@@ -130,16 +130,16 @@
 	/* Live: an in-progress match gets an accent-colored border so it stands out
 	   while scanning a round of otherwise-neutral cards. */
 	.card.live {
-		border-color: var(--bk-accent, #5b8def);
+		border-color: var(--bk-accent, var(--color-accent));
 	}
 	.card.interactive {
 		cursor: pointer;
 	}
 	.card.interactive:hover {
-		border-color: var(--bk-accent, #5b8def);
+		border-color: var(--bk-accent, var(--color-accent));
 	}
 	.card.interactive:focus-visible {
-		outline: 2px solid var(--bk-accent, #5b8def);
+		outline: 2px solid var(--bk-accent, var(--color-accent));
 		outline-offset: 2px;
 	}
 
@@ -151,18 +151,18 @@
 		font-size: 10px;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
-		color: var(--bk-muted, #7a8194);
-		background: var(--bk-meta-bg, #14161b);
-		border-bottom: 1px solid var(--bk-card-border, #2a2e37);
+		color: var(--bk-muted, var(--color-muted));
+		background: var(--bk-meta-bg, var(--color-subtle));
+		border-bottom: 1px solid var(--bk-card-border, var(--color-border));
 	}
 	.status {
-		color: var(--bk-accent, #5b8def);
+		color: var(--bk-accent, var(--color-accent));
 		font-weight: 600;
 	}
 	/* Bye/walkover read as "decided without a real contest" rather than "won" —
 	   gold instead of accent keeps that distinct from a properly played result. */
 	.card.bye .status {
-		color: var(--bk-gold, #d4a94e);
+		color: var(--bk-gold, var(--color-gold));
 	}
 
 	.side {
@@ -174,7 +174,7 @@
 		position: relative;
 	}
 	.side + .side {
-		border-top: 1px solid var(--bk-card-border, #2a2e37);
+		border-top: 1px solid var(--bk-card-border, var(--color-border));
 	}
 
 	.team {
@@ -182,20 +182,20 @@
 		min-width: 0;
 		font-size: 13px;
 		font-weight: 500;
-		color: var(--bk-text, #e7e9ee);
+		color: var(--bk-text, var(--color-primary));
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 	.team.tbd {
-		color: var(--bk-muted, #7a8194);
+		color: var(--bk-muted, var(--color-muted));
 		font-style: italic;
 		font-weight: 400;
 	}
 	/* A genuine bye ("no opponent") reads differently from an undecided TBD —
 	   gold rather than muted-italic, so it's clear the slot isn't just pending. */
 	.team.bye-slot {
-		color: var(--bk-gold, #d4a94e);
+		color: var(--bk-gold, var(--color-gold));
 		font-style: normal;
 		font-weight: 500;
 	}
@@ -204,7 +204,7 @@
 		font-variant-numeric: tabular-nums;
 		font-size: 13px;
 		font-weight: 700;
-		color: var(--bk-text, #e7e9ee);
+		color: var(--bk-text, var(--color-primary));
 		min-width: 1.6em;
 		text-align: right;
 	}
@@ -213,12 +213,12 @@
 	   not this side): dimmed so the eye lands on the winner immediately. */
 	.side.winner .team,
 	.side.winner .score {
-		color: var(--bk-winner, #ffffff);
+		color: var(--bk-winner, var(--color-accent));
 		font-weight: 700;
 	}
 	.side.loser .team,
 	.side.loser .score {
-		color: var(--bk-muted, #7a8194);
+		color: var(--bk-muted, var(--color-muted));
 		font-weight: 400;
 	}
 	.winner-mark {
@@ -227,7 +227,7 @@
 		width: 4px;
 		height: 4px;
 		border-radius: 999px;
-		background: var(--bk-accent, #5b8def);
+		background: var(--bk-accent, var(--color-accent));
 	}
 
 	@media (prefers-reduced-motion: no-preference) {

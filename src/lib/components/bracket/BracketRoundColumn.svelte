@@ -108,7 +108,7 @@
 		font-weight: 700;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
-		color: var(--bk-header, #aeb4c2);
+		color: var(--bk-header, var(--color-muted));
 		text-align: center;
 	}
 	.slots {
