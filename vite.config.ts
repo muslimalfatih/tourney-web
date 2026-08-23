@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
-import adapter from '@sveltejs/adapter-node';
+import vercel from '@sveltejs/adapter-vercel';
+import node from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
@@ -12,9 +13,11 @@ export default defineConfig({
 				runes: ({ filename }) => filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 
-			// adapter-node: SvelteKit public pages are SSR'd on a Node runtime,
-			// deployed independently of laga-api. See README.
-			adapter: adapter(),
+			// On Vercel (VERCEL=1 in their build env) build serverless functions;
+			// everywhere else keep the Node server so `pnpm build && node build`
+			// self-hosting and local previews still work. laga-api deploys
+			// separately either way. See README.
+			adapter: process.env.VERCEL ? vercel({ runtime: 'nodejs24.x' }) : node(),
 
 			alias: {
 				$lib: 'src/lib'
