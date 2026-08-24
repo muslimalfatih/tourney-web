@@ -1,7 +1,7 @@
 // Phase 4B: metadata builder + path parsing. npm test
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildMetaTags, tournamentPathInfo } from './meta.ts';
+import { buildMetaTags, sitePageMeta, tournamentPathInfo } from './meta.ts';
 
 test('tournament paths parse into slug + section', () => {
 	assert.deepEqual(tournamentPathInfo('/tournaments/renon-cup-2026'), {
@@ -22,6 +22,13 @@ test('tournament paths parse into slug + section', () => {
 	});
 	assert.equal(tournamentPathInfo('/organizer/tournaments/x'), null);
 	assert.equal(tournamentPathInfo('/'), null);
+});
+
+test('sitePageMeta covers the static public pages and nothing else', () => {
+	assert.ok(sitePageMeta('/')?.title.includes('tourney.social'));
+	assert.ok(sitePageMeta('/contact')?.title.includes('Contact'));
+	assert.equal(sitePageMeta('/tournaments/renon-cup-2026'), null);
+	assert.equal(sitePageMeta('/organizer/tournaments'), null);
 });
 
 test('meta tags carry title, canonical, og and twitter fields', () => {

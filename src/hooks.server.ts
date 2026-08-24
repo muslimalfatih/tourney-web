@@ -2,20 +2,37 @@ import type { Handle } from '@sveltejs/kit';
 import { getAccessToken, getRefreshToken, setSession, clearSession } from '$lib/server/session';
 import { me, refresh } from '$lib/api/endpoints/auth';
 import { getPublicTournament } from '$lib/api/endpoints/tournaments';
-import { buildMetaTags, tournamentPathInfo } from '$lib/server/meta';
+import { buildMetaTags, sitePageMeta, tournamentPathInfo } from '$lib/server/meta';
 import { shareUrl } from '$lib/utils/share';
 import { SITE_BASE_URL } from '$lib/config/env';
 
 // Link-preview metadata (Phase 4B, "Option A"): the public pages are
 // client-rendered, so the served shell carries no tags a crawler can read.
-// For public tournament paths we ask the Go API for the tournament — the API
-// is the visibility authority, so drafts/hidden tournaments 404 and inject
-// NOTHING — and swap the tags in over the shell's <!-- tourney:head --> marker.
-// A tiny per-slug TTL cache keeps crawler bursts off the API.
+// For tournament paths we ask the Go API for the tournament — the API is the
+// visibility authority, so drafts/hidden tournaments 404 and inject NOTHING —
+// and swap the tags in over the shell's <!-- tourney:head --> marker. The
+// static site pages (home, contact) get a fixed title/description from
+// sitePageMeta instead, no fetch involved. A tiny per-slug TTL cache keeps
+// crawler bursts off the API for tournament pages only.
 const metaCache = new Map<string, { tags: string | null; until: number }>();
 const META_TTL_MS = 60_000;
 
 async function publicMetaTags(url: URL, fetchFn: typeof fetch): Promise<string | null> {
+	const origin = (SITE_BASE_URL || url.origin).replace(/\/$/, '');
+	const image = `${origin}/home-hero.webp`;
+
+	// Static pages (home, contact): no entity, no fetch, no cache needed.
+	const page = sitePageMeta(url.pathname);
+	if (page) {
+		return buildMetaTags({
+			name: page.title,
+			description: page.description,
+			section: '',
+			url: `${origin}${url.pathname}`,
+			image
+		});
+	}
+
 	const info = tournamentPathInfo(url.pathname);
 	if (!info) return null;
 
@@ -26,7 +43,6 @@ async function publicMetaTags(url: URL, fetchFn: typeof fetch): Promise<string |
 	let tags: string | null = null;
 	try {
 		const t = await getPublicTournament(info.slug, { fetch: fetchFn });
-		const origin = (SITE_BASE_URL || url.origin).replace(/\/$/, '');
 		tags = buildMetaTags({
 			name: t.name,
 			sport: t.sport,
@@ -34,7 +50,7 @@ async function publicMetaTags(url: URL, fetchFn: typeof fetch): Promise<string |
 			description: t.description,
 			section: info.section,
 			url: shareUrl(url, origin),
-			image: `${origin}/og-default.png`
+			image
 		});
 	} catch {
 		// Not published / API unreachable — the shell ships without tags.
@@ -85,9 +101,13 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	}
 
-	// Public tournament pages: inject crawler metadata into the app shell.
-	// Only the HTML shell request matters; data/asset requests skip the fetch.
-	if (event.request.method === 'GET' && tournamentPathInfo(event.url.pathname)) {
+	// Public pages — tournaments plus the static site pages (home, contact):
+	// inject crawler metadata into the app shell. ssr=false means the shell
+	// otherwise reaches crawlers with no title, no description, no og tags.
+	if (
+		event.request.method === 'GET' &&
+		(tournamentPathInfo(event.url.pathname) || sitePageMeta(event.url.pathname))
+	) {
 		const tags = await publicMetaTags(event.url, event.fetch);
 		if (tags) {
 			return resolve(event, {

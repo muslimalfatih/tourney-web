@@ -7,13 +7,9 @@
 	const DEMO = '/tournaments/renon-cup-2026';
 </script>
 
-<svelte:head>
-	<title>tourney.social — live draws for tennis & padel tournaments</title>
-	<meta
-		name="description"
-		content="Live brackets, courtside scoreboards and shareable schedules for tennis and padel tournaments — built for the clubs that run them."
-	/>
-</svelte:head>
+<!-- No title/description here: hooks.server.ts injects them server-side from
+     sitePageMeta('/') so a non-JS crawler sees them too. Declaring them again
+     in svelte:head would only risk drifting from that copy. -->
 
 <section class="hero">
 	<div class="hero-scrim" aria-hidden="true"></div>

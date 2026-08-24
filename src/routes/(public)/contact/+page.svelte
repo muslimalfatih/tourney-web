@@ -4,8 +4,6 @@
 	// around it with a pointer-driven parallax, and a four-column info grid
 	// anchored at the bottom. Tiles are CSS-crafted (gradients + the LightBoard
 	// dot motif) so the page ships self-contained, in the tourney palette.
-	import { page } from '$app/state';
-
 	const EMAIL = 'hello@tourney.social';
 
 	// Parallax: each tile translates against the cursor at its own depth.
@@ -54,11 +52,8 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Contact — tourney.social</title>
-	<meta name="description" content="Talk to the team behind tourney.social — tournaments, live draws and schedules for tennis and padel." />
-	<link rel="canonical" href={new URL('/contact', page.url.origin).href} />
-</svelte:head>
+<!-- No title/description/canonical here: hooks.server.ts injects them from
+     sitePageMeta('/contact') so a non-JS crawler sees them too. -->
 
 <svelte:window onpointermove={onPointerMove} />
 

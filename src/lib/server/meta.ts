@@ -35,6 +35,29 @@ const SECTION_LABEL: Record<string, string> = {
 	matches: 'Match'
 };
 
+/**
+ * Title + description for the static public pages (home, contact) — the ones
+ * with no API-backed entity behind them. Unlike a tournament page, these need
+ * no fetch and no cache: the pair is fixed per path, so hooks.server.ts can
+ * build tags from this table alone.
+ */
+const SITE_PAGE_META: Record<string, { title: string; description: string }> = {
+	'/': {
+		title: 'tourney.social — live draws for tennis & padel tournaments',
+		description:
+			'One link for the whole cup: live brackets, schedules and the courtside board, updating as every score lands.'
+	},
+	'/contact': {
+		title: 'Contact — tourney.social',
+		description:
+			'Talk to the team behind tourney.social — tournaments, live draws and schedules for tennis and padel.'
+	}
+};
+
+export function sitePageMeta(pathname: string): { title: string; description: string } | null {
+	return SITE_PAGE_META[pathname] ?? null;
+}
+
 export interface MetaInput {
 	name: string;
 	sport?: string | null;
